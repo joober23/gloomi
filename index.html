@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gloomi - Skincare Routine</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Fonte Darumadrop One -->
+    <link href="https://fonts.googleapis.com/css2?family=Darumadrop+One&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- ==========================================
+         SPLASH SCREEN
+    =========================================== -->
+    <div id="splash-screen">
+        <img src="logo.png" alt="Gloomi Logo" class="splash-logo">
+    </div>
+
+    <!-- ==========================================
+         TELA DE LOGIN
+    =========================================== -->
+    <div id="login-screen" style="display: none;">
+        <div class="login-visuals">
+            <div class="login-stars">✦ ✦ ✦</div>
+            <div class="lumi-head-wrapper home-lumi" style="transform: scale(1.5); margin-bottom: 30px;">
+                <div class="lumi-layer head-mask" style="background-color: #FFB3BA;"></div>
+                <img src="eyes-default.png" class="lumi-layer eyes-layer" alt="Olhos">
+                <img src="mouth-default.png" class="lumi-layer mouth-layer" alt="Boca">
+            </div>
+            <h1>Hora de cuidar<br>do seu brilho!</h1>
+            <p>Seu assistente de pele pessoal está te esperando.</p>
+        </div>
+        
+        <div class="login-form-container">
+            <div class="login-form">
+                <h2>Bem-vinda(o) de volta!</h2>
+                <p class="login-sub">Faça login para acessar sua rotina.</p>
+
+                <div class="custom-input">
+                    <input type="email" placeholder=" " id="email" required>
+                    <label for="email">Seu e-mail lindo</label>
+                    <div class="input-line"></div>
+                </div>
+
+                <div class="custom-input">
+                    <input type="password" placeholder=" " id="password" required>
+                    <label for="password">Senha secreta</label>
+                    <div class="input-line"></div>
+                </div>
+
+                <div class="login-actions">
+                    <button class="login-btn" onclick="doLogin()">Entrar ✦</button>
+                    <button class="login-btn-google" aria-label="Entrar com Google" type="button">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Ícone Google">
+                    </button>
+                    <a href="#" class="forgot-pass">Esqueci minha senha</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         APP PRINCIPAL (Oculto até o login)
+    =========================================== -->
+    <div id="main-app" style="display: none;">
+        
+        <!-- HEADER -->
+        <header>
+            <a href="#" class="logo">
+                <img src="logo.png" alt="Logo Gloomi" class="logo-img" width="120">
+            </a>
+            
+            <nav>
+                <button class="nav-link active" onclick="switchTab('routine')">Minha Rotina</button>
+                <button class="nav-link" onclick="switchTab('products')">Produtos</button>
+                <button class="nav-link" onclick="switchTab('history')">Histórico</button>
+            </nav>
+            
+            <div class="profile" onclick="switchTab('profile')">
+                <div class="profile-icon">
+                    <div class="lumi-head-wrapper mini">
+                        <div class="lumi-layer head-mask nav-lumi-head" style="background-color: #FFB3BA;"></div>
+                        <img src="eyes-default.png" class="lumi-layer eyes-layer nav-lumi-eyes" alt="Olhos">
+                        <img src="mouth-default.png" class="lumi-layer mouth-layer nav-lumi-mouth" alt="Boca">
+                    </div>
+                </div>
+                <span id="header-user-name">Meu Perfil</span>
+            </div>
+        </header>
+
+        <!-- CONTEÚDO PRINCIPAL -->
+        <main>
+            <!-- ABA 1: ROTINA -->
+            <section id="tab-routine" class="tab-content active">
+                <div class="welcome">
+                    <div class="welcome-text">
+                        <span class="brand-tag">SUA ROTINA HOJE</span>
+                        <h1 id="welcome-title">Olá, seu Lumi está pronto<br>para cuidar da sua pele!</h1>
+                        <p class="description">Acompanhe seus passos diários para manter o brilho e a saúde da pele em dia.</p>
+                    </div>
+                    <div class="skin-illustration">
+                        <div class="lumi-head-wrapper home-lumi">
+                            <div class="lumi-layer head-mask home-lumi-head" style="background-color: #FFB3BA;"></div>
+                            <img src="eyes-default.png" class="lumi-layer eyes-layer home-lumi-eyes" alt="Olhos">
+                            <img src="mouth-default.png" class="lumi-layer mouth-layer home-lumi-mouth" alt="Boca">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="summary">
+                    <div class="summary-card">
+                        <div class="summary-icon">✨</div>
+                        <div>
+                            <span>Passos Concluídos</span>
+                            <strong><span id="completed-count">0</span> / 4</strong>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-icon">🔥</div>
+                        <div>
+                            <span>Sequência Atual</span>
+                            <strong>5 Dias</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-header">
+                    <div>
+                        <div class="small-title">HOJE</div>
+                        <h2>Passos da Rotina</h2>
+                    </div>
+                </div>
+
+                <!-- Rotina da Manhã -->
+                <div class="routine">
+                    <div class="routine-title">
+                        <div class="routine-info">
+                            <div class="routine-emoji">☀️</div>
+                            <div>
+                                <h3>Rotina da Manhã</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="product-list">
+                        <div class="product" id="prod-1">
+                            <div class="product-number">1</div>
+                            <div class="product-info">
+                                <h4>Gel de Limpeza Suave</h4>
+                            </div>
+                            <button class="check" onclick="toggleCheck('prod-1')">✓</button>
+                        </div>
+                        <div class="product" id="prod-2">
+                            <div class="product-number">2</div>
+                            <div class="product-info">
+                                <h4>Protetor Solar FPS 50</h4>
+                            </div>
+                            <button class="check" onclick="toggleCheck('prod-2')">✓</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rotina da Noite -->
+                <div class="routine">
+                    <div class="routine-title">
+                        <div class="routine-info">
+                            <div class="routine-emoji">🌙</div>
+                            <div>
+                                <h3>Rotina da Noite</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="product-list">
+                        <div class="product" id="prod-3">
+                            <div class="product-number">1</div>
+                            <div class="product-info">
+                                <h4>Sérum Hidratante</h4>
+                            </div>
+                            <button class="check" onclick="toggleCheck('prod-3')">✓</button>
+                        </div>
+                        <div class="product" id="prod-4">
+                            <div class="product-number">2</div>
+                            <div class="product-info">
+                                <h4>Creme Noturno Reparador</h4>
+                            </div>
+                            <button class="check" onclick="toggleCheck('prod-4')">✓</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="progress-section">
+                    <div class="progress-header">
+                        <h2>Status de Hoje</h2>
+                        <span class="progress-percent" id="progress-percent">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress" id="progress-bar-inner" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ABA 2: PRODUTOS -->
+            <section id="tab-products" class="tab-content">
+                <div class="section-header">
+                    <h2>Meus Produtos</h2>
+                </div>
+                <div class="products-grid">
+                    <div class="product-card">
+                        <span class="product-badge">Limpeza</span>
+                        <h3>Gel de Limpeza Facial</h3>
+                        <span class="brand-name">CeraVe</span>
+                    </div>
+                    <div class="product-card">
+                        <span class="product-badge">Proteção</span>
+                        <h3>Protetor Solar FPS 50</h3>
+                        <span class="brand-name">La Roche-Posay</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ABA 3: HISTÓRICO -->
+            <section id="tab-history" class="tab-content">
+                <div class="section-header">
+                    <h2>Histórico Semanal</h2>
+                </div>
+                <div class="history-list">
+                    <div class="history-card">
+                        <div class="history-date">
+                            <strong>ONTEM</strong>
+                        </div>
+                        <div class="history-info">
+                            <span class="status completed">100% Concluído</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ABA 4: PERFIL -->
+            <section id="tab-profile" class="tab-content">
+                <div class="section-header">
+                    <div>
+                        <div class="small-title">SUA CONTA</div>
+                        <h2>Meu Perfil</h2>
+                    </div>
+                </div>
+
+                <div class="profile-layout">
+                    <!-- Informações Pessoais -->
+                    <div class="profile-card">
+                        <h3>Meus Dados</h3>
+                        <p class="sub">Como o Gloomi deve te chamar?</p>
+                        
+                        <div class="custom-input" style="margin-top: 25px;">
+                            <input type="text" placeholder=" " id="user-name-input" value="" onkeyup="updateUserName(this.value)">
+                            <label for="user-name-input">Seu nome ou apelido</label>
+                            <div class="input-line"></div>
+                        </div>
+
+                        <div class="custom-input" style="margin-top: 30px;">
+                            <select id="skin-type-select" class="custom-select">
+                                <option value="" disabled selected>Escolha seu tipo...</option>
+                                <option value="mista">Pele Mista</option>
+                                <option value="oleosa">Pele Oleosa</option>
+                                <option value="seca">Pele Seca</option>
+                                <option value="normal">Pele Normal</option>
+                            </select>
+                            <label class="select-label">Tipo de Pele</label>
+                        </div>
+                    </div>
+
+                    <!-- Cartão do Lumi -->
+                    <div class="profile-card lumi-card">
+                        <h3>Seu Assistente</h3>
+                        <p class="sub">Deixe o Lumi com a sua cara!</p>
+                        
+                        <div class="profile-lumi-display">
+                            <div class="lumi-head-wrapper" style="transform: scale(1.2);">
+                                <div class="lumi-layer head-mask nav-lumi-head" style="background-color: #FFB3BA;"></div>
+                                <img src="eyes-default.png" class="lumi-layer eyes-layer nav-lumi-eyes" alt="Olhos">
+                                <img src="mouth-default.png" class="lumi-layer mouth-layer nav-lumi-mouth" alt="Boca">
+                            </div>
+                        </div>
+                        
+                        <button class="login-btn" onclick="openModal()" style="width: 100%;">Personalizar Lumi ✦</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- MODAL CUSTOMIZADOR DO LUMI -->
+        <div class="modal-overlay" id="customizer-modal">
+            <div class="modal-card">
+                <button class="close-btn" onclick="closeModal()">✕</button>
+                <h2>Customize seu Lumi</h2>
+
+                <div class="lumi-stage">
+                    <div class="lumi-head-wrapper stage-lumi" style="transform: scale(1.5); margin: 20px 0;">
+                        <div class="lumi-layer head-mask stage-lumi-head" id="modal-lumi-head" style="background-color: #FFB3BA;"></div>
+                        <img src="eyes-default.png" class="lumi-layer eyes-layer" id="modal-lumi-eyes" alt="Olhos">
+                        <img src="mouth-default.png" class="lumi-layer mouth-layer" id="modal-lumi-mouth" alt="Boca">
+                    </div>
+                </div>
+
+                <div class="customizer-options">
+                    <div class="option-group">
+                        <label>Cor da Pele</label>
+                        <div class="color-picker">
+                            <button class="color-btn selected" style="background-color: #FFB3BA;" onclick="selectColor('#FFB3BA', this)"></button>
+                            <button class="color-btn" style="background-color: #FFDFBA;" onclick="selectColor('#FFDFBA', this)"></button>
+                            <button class="color-btn" style="background-color: #FFFFBA;" onclick="selectColor('#FFFFBA', this)"></button>
+                            <button class="color-btn" style="background-color: #BAFFC9;" onclick="selectColor('#BAFFC9', this)"></button>
+                            <button class="color-btn" style="background-color: #BAE1FF;" onclick="selectColor('#BAE1FF', this)"></button>
+                            <button class="color-btn" style="background-color: #E8AEFF;" onclick="selectColor('#E8AEFF', this)"></button>
+                        </div>
+                    </div>
+
+                    <div class="option-group">
+                        <label>Olhos</label>
+                        <div class="btn-picker" id="eyes-picker">
+                            <button class="active" onclick="selectEyes('default', this)">Padrão</button>
+                            <button onclick="selectEyes('angry', this)">Bravo</button>
+                            <button onclick="selectEyes('cat', this)">Felino</button>
+                        </div>
+                    </div>
+
+                    <div class="option-group toggle-group" style="display: flex; justify-content: space-between; align-items: center; margin: 15px 0;">
+                        <label>Cílios (Feminino)</label>
+                        <input type="checkbox" id="female-toggle" onchange="toggleFeminine(this.checked)">
+                    </div>
+
+                    <div class="option-group">
+                        <label>Boca</label>
+                        <div class="btn-picker" id="mouth-picker">
+                            <button class="active" onclick="selectMouth('default', this)">Padrão</button>
+                            <button onclick="selectMouth('happy', this)">Feliz</button>
+                            <button onclick="selectMouth('angry', this)">Bravo</button>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="login-btn" style="width: 100%; margin-top: 20px;" onclick="saveCustomization()">Salvar Lumi</button>
+            </div>
+        </div>
+
+        <footer>
+            Gloomi Skincare Routine © 2026 — Cuide de você todos os dias.
+        </footer>
+    </div> 
+
+    <script src="script.js"></script>
+</body>
+</html>
