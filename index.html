@@ -3,352 +3,551 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gloomi - Skincare Routine</title>
+    <title>Gloomi - Sua Rotina de Skincare</title>
+    <!-- Fontes -->
+    <link href="https://fonts.googleapis.com/css?family=Darumadrop+One&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS para utilitários de layout -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
-    <!-- Fonte Darumadrop One -->
-    <link href="https://fonts.googleapis.com/css2?family=Darumadrop+One&display=swap" rel="stylesheet">
+    <script src="script.js" defer></script>
+
+
 </head>
 <body>
 
-    <!-- ==========================================
-         SPLASH SCREEN
-    =========================================== -->
-    <div id="splash-screen">
-        <img src="logo.png" alt="Gloomi Logo" class="splash-logo">
+    <div id="splash-screen" class="fixed inset-0 bg-[#F4F9F6] flex items-center justify-center z-[9999] transition-opacity duration-700">
+        <h1 class="font-title text-[64px] text-[#944654]" style="animation: floatGlow 3s ease-in-out infinite;">Gloomi +</h1>
     </div>
 
-    <!-- ==========================================
-         TELA DE LOGIN
-    =========================================== -->
-    <div id="login-screen" style="display: none;">
-        <div class="login-visuals">
-            <div class="login-stars">✦ ✦ ✦</div>
-            <div class="lumi-head-wrapper home-lumi" style="transform: scale(1.5); margin-bottom: 30px;">
-                <div class="lumi-layer head-mask" style="background-color: #FFB3BA;"></div>
-                <img src="eyes-default.png" class="lumi-layer eyes-layer" alt="Olhos">
-                <img src="mouth-default.png" class="lumi-layer mouth-layer" alt="Boca">
-            </div>
-            <h1>Hora de cuidar<br>do seu brilho!</h1>
-            <p>Seu assistente de pele pessoal está te esperando.</p>
+    <div id="login-screen" class="hidden min-h-screen bg-[#F4F9F6] opacity-0 transition-opacity duration-700 md:flex-row flex-col">
+        <div class="flex-1 bg-gradient-to-br from-[#A05C7B] to-[#944654] rounded-b-[40px] md:rounded-r-[60px] md:rounded-bl-none flex flex-col items-center justify-center text-white p-10 text-center relative overflow-hidden shadow-[10px_0_30px_rgba(148,70,84,0.15)]">
+            <div class="text-[24px] text-[#A6F4DC] mb-10 tracking-[15px] animate-pulse">✦✦✦</div>
+            <h1 class="font-title text-[48px] leading-tight mt-5">Bem-vindo(a) ao<br>Gloomi</h1>
+            <p class="mt-4 text-[16px] opacity-90 max-w-sm">Seu assistente pessoal e gamificado para cuidar da sua pele todos os dias.</p>
         </div>
-        
-        <div class="login-form-container">
-            <div class="login-form">
-                <h2>Bem-vinda(o) de volta!</h2>
-                <p class="login-sub">Faça login para acessar sua rotina.</p>
-
+        <div class="flex-1 flex items-center justify-center p-10">
+            <div class="w-full max-w-[380px]">
+                <h2 class="font-title text-[36px] text-[#944654] mb-1">Entrar</h2>
+                <p class="text-[#8F7C83] text-[14px] mb-10">Acesse sua conta ou crie uma agora!</p>
+                
                 <div class="custom-input">
-                    <input type="email" placeholder=" " id="email" required>
-                    <label for="email">Seu e-mail lindo</label>
+                    <input type="text" id="login-name" placeholder=" " required autocomplete="off">
+                    <label>Nome de Usuário</label>
                     <div class="input-line"></div>
                 </div>
-
-                <div class="custom-input">
-                    <input type="password" placeholder=" " id="password" required>
-                    <label for="password">Senha secreta</label>
-                    <div class="input-line"></div>
-                </div>
-
-                <div class="login-actions">
-                    <button class="login-btn" onclick="doLogin()">Entrar ✦</button>
-                    <button class="login-btn-google" aria-label="Entrar com Google" type="button">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Ícone Google">
-                    </button>
-                    <a href="#" class="forgot-pass">Esqueci minha senha</a>
+                
+                <!-- A senha foi ocultada para dar foco ao nome de usuário e LocalStorage neste fluxo -->
+                <div class="flex flex-col items-center gap-4 mt-8">
+                    <button class="btn-primary w-full py-4 text-[16px]" onclick="doLogin()">Acessar meu Gloomi</button>
+                    <p class="text-[#8F7C83] text-[12px]">Seu progresso será salvo no seu navegador.</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ==========================================
-         APP PRINCIPAL (Oculto até o login)
-    =========================================== -->
-    <div id="main-app" style="display: none;">
-        
-        <!-- HEADER -->
-        <header>
-            <a href="#" class="logo">
-                <img src="logo.png" alt="Logo Gloomi" class="logo-img" width="120">
-            </a>
+    <div id="onboarding-screen" class="hidden min-h-screen bg-[#F4F9F6] items-center justify-center p-6 opacity-0 transition-opacity duration-700 relative z-50">
+        <div class="w-full max-w-[500px] bg-white rounded-[32px] p-8 md:p-10 shadow-[0_10px_40px_rgba(148,70,84,0.1)] relative overflow-hidden">
+            <div class="font-title text-[24px] text-[#944654] mb-6 text-center">Conhecendo sua pele ✦</div>
+
+            <!-- Passo 1: Perfil da Pele -->
+            <div id="ob-step-1" class="flex flex-col gap-6 animate-fade-in mt-2">
+                <h3 class="text-[18px] font-bold text-[#33272A] text-center mb-2">Conta pra gente sobre você</h3>
+
+                <div class="custom-input">
+                    <select id="ob-skin-type" required>
+                        <option value="" disabled selected>Selecione...</option>
+                        <option value="oleosa">Oleosa</option>
+                        <option value="mista">Mista</option>
+                        <option value="seca">Seca</option>
+                        <option value="normal">Normal</option>
+                    </select>
+                    <label>Como é sua pele? (Tipo geral)</label>
+                    <div class="input-line"></div>
+                </div>
+
+                <div class="custom-input">
+                    <select id="ob-skin-condition" required>
+                        <option value="" disabled selected>Selecione...</option>
+                        <option value="sensivel">Sensível</option>
+                        <option value="acneica">Acneica / Com espinhas</option>
+                        <option value="ressecada">Ressecada / Descamando</option>
+                        <option value="manchas">Com Manchas</option>
+                        <option value="equilibrada">Equilibrada</option>
+                    </select>
+                    <label>Como está sua pele hoje?</label>
+                    <div class="input-line"></div>
+                </div>
+
+                <div class="custom-input">
+                    <input type="number" id="ob-age" placeholder=" " min="10" max="100" required>
+                    <label>Sua idade</label>
+                    <div class="input-line"></div>
+                </div>
+
+                <button class="btn-primary w-full py-4 mt-2" onclick="goToOnboardingStep(2)">Próximo Passo</button>
+            </div>
+
+            <!-- Passo 2: Experiência -->
+            <div id="ob-step-2" class="hidden flex-col gap-5 animate-fade-in">
+                <h3 class="text-[18px] font-bold text-[#33272A] text-center mb-6">Você já tem o costume de fazer skincare?</h3>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button class="flex-1 py-4 border-2 border-[#E6EDE9] rounded-2xl text-[#8F7C83] font-bold hover:border-[#57A470] hover:text-[#57A470] hover:bg-[#EAF5F0] transition-colors" onclick="setExperience(true)">Sim, eu faço</button>
+                    <button class="flex-1 py-4 border-2 border-[#E6EDE9] rounded-2xl text-[#8F7C83] font-bold hover:border-[#944654] hover:text-[#944654] hover:bg-[#FFF0F0] transition-colors" onclick="setExperience(false)">Não, nunca fiz</button>
+                </div>
+                <button class="text-[#8F7C83] text-sm mt-4 underline text-center" onclick="goToOnboardingStep(1)">Voltar</button>
+            </div>
+
+            <!-- Passo 3A: Já tem experiência -> Adicionar Produtos -->
+            <div id="ob-step-3a" class="hidden flex-col gap-5 animate-fade-in">
+                <h3 class="text-[18px] font-bold text-[#33272A] text-center mb-2">Legal! Quais produtos você já usa?</h3>
+                <p class="text-[14px] text-[#8F7C83] text-center mb-4">Insira um produto para começar sua rotina, ou pule para adicionar depois na aba de Produtos.</p>
+
+                <div class="custom-input">
+                    <input type="text" id="ob-prod-name" placeholder=" ">
+                    <label>Nome do Produto (Ex: Sabonete Facial)</label>
+                    <div class="input-line"></div>
+                </div>
+
+                <div class="flex flex-col gap-3 mt-2">
+                    <button class="btn-primary w-full py-3" onclick="finishOnboarding('add_product')">Adicionar e Entrar</button>
+                    <button class="w-full py-3 text-[#8F7C83] font-bold hover:bg-[#F4F9F6] rounded-xl transition-colors" onclick="finishOnboarding('skip')">Pular por enquanto</button>
+                </div>
+            </div>
+
+            <!-- Passo 3B: Sem experiência -> Sugestão Básica -->
+            <div id="ob-step-3b" class="hidden flex-col gap-5 animate-fade-in text-center">
+                <div class="text-[40px] mb-2" style="animation: floatGlow 3s infinite;">✨</div>
+                <h3 class="text-[18px] font-bold text-[#33272A] mb-2">Que tal fazer sua primeira skincare?</h3>
+                <p class="text-[14px] text-[#8F7C83] mb-6">O Gloomi vai te guiar passo a passo com uma rotina básica e suave para iniciantes.</p>
+
+                <div class="flex flex-col gap-3">
+                    <button class="btn-primary w-full py-3" onclick="finishOnboarding('start_basic')">Sim, quero começar!</button>
+                    <button class="w-full py-3 text-[#8F7C83] font-bold hover:bg-[#F4F9F6] rounded-xl transition-colors" onclick="finishOnboarding('skip')">Pular por enquanto</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="main-app" class="hidden">
+        <!-- Header -->
+        <header class="h-[75px] bg-white flex items-center justify-between px-[5%] md:px-[7%] border-b border-[#E6EDE9] shadow-sm sticky top-0 z-50">
+            <div class="font-title text-[28px] text-[#944654] flex items-center gap-1 cursor-pointer" onclick="switchTab('routine')">
+                Gloomi <span class="text-[20px] text-[#57A470]">✦</span>
+            </div>
             
-            <nav>
+            <nav class="hidden md:flex gap-8">
                 <button class="nav-link active" onclick="switchTab('routine')">Minha Rotina</button>
                 <button class="nav-link" onclick="switchTab('products')">Produtos</button>
-                <button class="nav-link" onclick="switchTab('history')">Histórico</button>
+                <button class="nav-link" onclick="switchTab('diary')">Diário e Fotos</button>
+                <button class="nav-link flex items-center gap-2" onclick="switchTab('shop')">
+                    <i class="fa-solid fa-store"></i> Loja Lumi
+                </button>
             </nav>
-            
-            <div class="profile" onclick="switchTab('profile')">
-                <div class="profile-icon">
-                    <div class="lumi-head-wrapper mini">
-                        <div class="lumi-layer head-mask nav-lumi-head" style="background-color: #FFB3BA;"></div>
-                        <img src="eyes-default.png" class="lumi-layer eyes-layer nav-lumi-eyes" alt="Olhos">
-                        <img src="mouth-default.png" class="lumi-layer mouth-layer nav-lumi-mouth" alt="Boca">
-                    </div>
+
+            <div class="flex gap-4 items-center">
+                <div class="bg-[#FFF9E6] border-2 border-[#FFD700] px-3 py-1 rounded-full font-bold text-[#333] flex items-center gap-2">
+                    <i class="fa-solid fa-coins text-[#FFD700]"></i> <span id="coin-counter">0</span>
                 </div>
-                <span id="header-user-name">Meu Perfil</span>
+                <div class="flex items-center gap-2 bg-[#F2E9EC] p-1 pr-4 rounded-full cursor-pointer hover:bg-[#E8DAE0] transition-colors" onclick="switchTab('profile')">
+                    <!-- Mini Avatar -->
+                    <div class="lumi-avatar lumi-mini" style="background-color: #FFB3BA;" id="nav-lumi-color">
+                        <div class="lumi-eyes-container"><div class="lumi-eye"></div><div class="lumi-eye"></div></div>
+                        <div class="lumi-mouth"></div>
+                    </div>
+                    <span id="header-user-name" class="text-[14px] font-semibold text-[#944654] hidden sm:block">Meu Perfil</span>
+                </div>
             </div>
         </header>
 
-        <!-- CONTEÚDO PRINCIPAL -->
-        <main>
-            <!-- ABA 1: ROTINA -->
-            <section id="tab-routine" class="tab-content active">
-                <div class="welcome">
-                    <div class="welcome-text">
-                        <span class="brand-tag">SUA ROTINA HOJE</span>
-                        <h1 id="welcome-title">Olá, seu Lumi está pronto<br>para cuidar da sua pele!</h1>
-                        <p class="description">Acompanhe seus passos diários para manter o brilho e a saúde da pele em dia.</p>
-                    </div>
-                    <div class="skin-illustration">
-                        <div class="lumi-head-wrapper home-lumi">
-                            <div class="lumi-layer head-mask home-lumi-head" style="background-color: #FFB3BA;"></div>
-                            <img src="eyes-default.png" class="lumi-layer eyes-layer home-lumi-eyes" alt="Olhos">
-                            <img src="mouth-default.png" class="lumi-layer mouth-layer home-lumi-mouth" alt="Boca">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="summary">
-                    <div class="summary-card">
-                        <div class="summary-icon">✨</div>
-                        <div>
-                            <span>Passos Concluídos</span>
-                            <strong><span id="completed-count">0</span> / 4</strong>
-                        </div>
-                    </div>
-                    <div class="summary-card">
-                        <div class="summary-icon">🔥</div>
-                        <div>
-                            <span>Sequência Atual</span>
-                            <strong>5 Dias</strong>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="section-header">
-                    <div>
-                        <div class="small-title">HOJE</div>
-                        <h2>Passos da Rotina</h2>
-                    </div>
-                </div>
-
-                <!-- Rotina da Manhã -->
-                <div class="routine">
-                    <div class="routine-title">
-                        <div class="routine-info">
-                            <div class="routine-emoji">☀️</div>
-                            <div>
-                                <h3>Rotina da Manhã</h3>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="product-list">
-                        <div class="product" id="prod-1">
-                            <div class="product-number">1</div>
-                            <div class="product-info">
-                                <h4>Gel de Limpeza Suave</h4>
-                            </div>
-                            <button class="check" onclick="toggleCheck('prod-1')">✓</button>
-                        </div>
-                        <div class="product" id="prod-2">
-                            <div class="product-number">2</div>
-                            <div class="product-info">
-                                <h4>Protetor Solar FPS 50</h4>
-                            </div>
-                            <button class="check" onclick="toggleCheck('prod-2')">✓</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Rotina da Noite -->
-                <div class="routine">
-                    <div class="routine-title">
-                        <div class="routine-info">
-                            <div class="routine-emoji">🌙</div>
-                            <div>
-                                <h3>Rotina da Noite</h3>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="product-list">
-                        <div class="product" id="prod-3">
-                            <div class="product-number">1</div>
-                            <div class="product-info">
-                                <h4>Sérum Hidratante</h4>
-                            </div>
-                            <button class="check" onclick="toggleCheck('prod-3')">✓</button>
-                        </div>
-                        <div class="product" id="prod-4">
-                            <div class="product-number">2</div>
-                            <div class="product-info">
-                                <h4>Creme Noturno Reparador</h4>
-                            </div>
-                            <button class="check" onclick="toggleCheck('prod-4')">✓</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="progress-section">
-                    <div class="progress-header">
-                        <h2>Status de Hoje</h2>
-                        <span class="progress-percent" id="progress-percent">0%</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress" id="progress-bar-inner" style="width: 0%;"></div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ABA 2: PRODUTOS -->
-            <section id="tab-products" class="tab-content">
-                <div class="section-header">
-                    <h2>Meus Produtos</h2>
-                </div>
-                <div class="products-grid">
-                    <div class="product-card">
-                        <span class="product-badge">Limpeza</span>
-                        <h3>Gel de Limpeza Facial</h3>
-                        <span class="brand-name">CeraVe</span>
-                    </div>
-                    <div class="product-card">
-                        <span class="product-badge">Proteção</span>
-                        <h3>Protetor Solar FPS 50</h3>
-                        <span class="brand-name">La Roche-Posay</span>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ABA 3: HISTÓRICO -->
-            <section id="tab-history" class="tab-content">
-                <div class="section-header">
-                    <h2>Histórico Semanal</h2>
-                </div>
-                <div class="history-list">
-                    <div class="history-card">
-                        <div class="history-date">
-                            <strong>ONTEM</strong>
-                        </div>
-                        <div class="history-info">
-                            <span class="status completed">100% Concluído</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ABA 4: PERFIL -->
-            <section id="tab-profile" class="tab-content">
-                <div class="section-header">
-                    <div>
-                        <div class="small-title">SUA CONTA</div>
-                        <h2>Meu Perfil</h2>
-                    </div>
-                </div>
-
-                <div class="profile-layout">
-                    <!-- Informações Pessoais -->
-                    <div class="profile-card">
-                        <h3>Meus Dados</h3>
-                        <p class="sub">Como o Gloomi deve te chamar?</p>
-                        
-                        <div class="custom-input" style="margin-top: 25px;">
-                            <input type="text" placeholder=" " id="user-name-input" value="" onkeyup="updateUserName(this.value)">
-                            <label for="user-name-input">Seu nome ou apelido</label>
-                            <div class="input-line"></div>
-                        </div>
-
-                        <div class="custom-input" style="margin-top: 30px;">
-                            <select id="skin-type-select" class="custom-select">
-                                <option value="" disabled selected>Escolha seu tipo...</option>
-                                <option value="mista">Pele Mista</option>
-                                <option value="oleosa">Pele Oleosa</option>
-                                <option value="seca">Pele Seca</option>
-                                <option value="normal">Pele Normal</option>
-                            </select>
-                            <label class="select-label">Tipo de Pele</label>
-                        </div>
-                    </div>
-
-                    <!-- Cartão do Lumi -->
-                    <div class="profile-card lumi-card">
-                        <h3>Seu Assistente</h3>
-                        <p class="sub">Deixe o Lumi com a sua cara!</p>
-                        
-                        <div class="profile-lumi-display">
-                            <div class="lumi-head-wrapper" style="transform: scale(1.2);">
-                                <div class="lumi-layer head-mask nav-lumi-head" style="background-color: #FFB3BA;"></div>
-                                <img src="eyes-default.png" class="lumi-layer eyes-layer nav-lumi-eyes" alt="Olhos">
-                                <img src="mouth-default.png" class="lumi-layer mouth-layer nav-lumi-mouth" alt="Boca">
-                            </div>
-                        </div>
-                        
-                        <button class="login-btn" onclick="openModal()" style="width: 100%;">Personalizar Lumi ✦</button>
-                    </div>
-                </div>
-            </section>
-        </main>
-
-        <!-- MODAL CUSTOMIZADOR DO LUMI -->
-        <div class="modal-overlay" id="customizer-modal">
-            <div class="modal-card">
-                <button class="close-btn" onclick="closeModal()">✕</button>
-                <h2>Customize seu Lumi</h2>
-
-                <div class="lumi-stage">
-                    <div class="lumi-head-wrapper stage-lumi" style="transform: scale(1.5); margin: 20px 0;">
-                        <div class="lumi-layer head-mask stage-lumi-head" id="modal-lumi-head" style="background-color: #FFB3BA;"></div>
-                        <img src="eyes-default.png" class="lumi-layer eyes-layer" id="modal-lumi-eyes" alt="Olhos">
-                        <img src="mouth-default.png" class="lumi-layer mouth-layer" id="modal-lumi-mouth" alt="Boca">
-                    </div>
-                </div>
-
-                <div class="customizer-options">
-                    <div class="option-group">
-                        <label>Cor da Pele</label>
-                        <div class="color-picker">
-                            <button class="color-btn selected" style="background-color: #FFB3BA;" onclick="selectColor('#FFB3BA', this)"></button>
-                            <button class="color-btn" style="background-color: #FFDFBA;" onclick="selectColor('#FFDFBA', this)"></button>
-                            <button class="color-btn" style="background-color: #FFFFBA;" onclick="selectColor('#FFFFBA', this)"></button>
-                            <button class="color-btn" style="background-color: #BAFFC9;" onclick="selectColor('#BAFFC9', this)"></button>
-                            <button class="color-btn" style="background-color: #BAE1FF;" onclick="selectColor('#BAE1FF', this)"></button>
-                            <button class="color-btn" style="background-color: #E8AEFF;" onclick="selectColor('#E8AEFF', this)"></button>
-                        </div>
-                    </div>
-
-                    <div class="option-group">
-                        <label>Olhos</label>
-                        <div class="btn-picker" id="eyes-picker">
-                            <button class="active" onclick="selectEyes('default', this)">Padrão</button>
-                            <button onclick="selectEyes('angry', this)">Bravo</button>
-                            <button onclick="selectEyes('cat', this)">Felino</button>
-                        </div>
-                    </div>
-
-                    <div class="option-group toggle-group" style="display: flex; justify-content: space-between; align-items: center; margin: 15px 0;">
-                        <label>Cílios (Feminino)</label>
-                        <input type="checkbox" id="female-toggle" onchange="toggleFeminine(this.checked)">
-                    </div>
-
-                    <div class="option-group">
-                        <label>Boca</label>
-                        <div class="btn-picker" id="mouth-picker">
-                            <button class="active" onclick="selectMouth('default', this)">Padrão</button>
-                            <button onclick="selectMouth('happy', this)">Feliz</button>
-                            <button onclick="selectMouth('angry', this)">Bravo</button>
-                        </div>
-                    </div>
-                </div>
-
-                <button class="login-btn" style="width: 100%; margin-top: 20px;" onclick="saveCustomization()">Salvar Lumi</button>
-            </div>
+        <!-- Navegação Mobile Inferior -->
+        <div class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-[#E6EDE9] flex justify-around p-3 z-50 shadow-[0_-5px_10px_rgba(0,0,0,0.02)]">
+            <button class="nav-link-mob flex flex-col items-center text-[#8F7C83] text-[12px] p-2" onclick="switchTab('routine')"><i class="fa-solid fa-house text-[20px] mb-1"></i>Rotina</button>
+            <button class="nav-link-mob flex flex-col items-center text-[#8F7C83] text-[12px] p-2" onclick="switchTab('products')"><i class="fa-solid fa-bottle-droplet text-[20px] mb-1"></i>Produtos</button>
+            <button class="nav-link-mob flex flex-col items-center text-[#8F7C83] text-[12px] p-2" onclick="switchTab('diary')"><i class="fa-solid fa-calendar-days text-[20px] mb-1"></i>Diário</button>
+            <button class="nav-link-mob flex flex-col items-center text-[#8F7C83] text-[12px] p-2" onclick="switchTab('shop')"><i class="fa-solid fa-store text-[20px] mb-1"></i>Loja</button>
         </div>
 
-        <footer>
-            Gloomi Skincare Routine © 2026 — Cuide de você todos os dias.
-        </footer>
-    </div> 
+        <main class="w-[90%] max-w-[1100px] mx-auto py-10 pb-32 md:pb-20">
+            
+            <div id="tab-routine" class="tab-content active animate-fade-in">
+                <!-- Welcome Banner -->
+                <div class="bg-gradient-to-br from-[#E6F5ED] to-[#D1EBE0] rounded-[24px] p-8 md:p-10 flex items-center justify-between shadow-[0_4px_20px_rgba(87,164,112,0.08)] mb-8">
+                    <div>
+                        <span class="font-title bg-[#57A470] text-white text-[12px] px-3 py-1 rounded-full tracking-wider inline-block mb-3">DASHBOARD</span>
+                        <h1 id="welcome-title" class="font-title text-[28px] md:text-[36px] text-[#944654] leading-tight mb-2">Olá, seu Lumi está pronto<br>para cuidar da sua pele!</h1>
+                        <p class="text-[#8F7C83] text-[14px] md:text-[16px] max-w-lg">Acompanhe sua rotina de hoje, ganhe moedas e veja as dicas do clima para proteger sua pele.</p>
+                    </div>
+                    <!-- Avatar Grande Decorativo -->
+                    <div class="hidden md:flex w-[140px] h-[140px] bg-white rounded-full items-center justify-center shadow-inner">
+                        <div class="lumi-avatar lumi-normal" style="background-color: #FFB3BA;" id="dash-lumi-color">
+                            <div class="lumi-eyes-container"><div class="lumi-eye"></div><div class="lumi-eye"></div></div>
+                            <div class="lumi-cheeks"><div class="lumi-cheek"></div><div class="lumi-cheek"></div></div>
+                            <div class="lumi-mouth"></div>
+                            <div class="lumi-accessory" id="dash-lumi-accessory"></div>
+                        </div>
+                    </div>
+                </div>
 
-    <script src="script.js"></script>
+                <!-- Widget Clima/UV -->
+                <div class="bg-gradient-to-br from-[#FFF0F0] to-[#FFE3E3] rounded-[20px] p-5 flex items-center gap-5 mb-8 shadow-sm">
+                    <div class="text-[3rem]" style="animation: pulseSun 3s infinite alternate;">☀️</div>
+                    <div>
+                        <h3 class="text-[1.2rem] font-bold text-[#33272A] mb-1">Índice UV Local: <span id="uv-value-text" class="text-[#8F7C83]">Carregando...</span></h3>
+                        <p id="uv-tip-text" class="text-[0.9rem] text-[#555]">Analisando o clima em Itapetininga para te dar a melhor dica...</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between mb-5 mt-10">
+                    <div>
+                        <div class="font-title text-[#57A470] text-[14px] tracking-wider mb-1">HOJE</div>
+                        <h2 class="font-title text-[28px] text-[#944654]">Rotina da Manhã</h2>
+                    </div>
+                    <button class="btn-primary px-4 py-2 text-[13px]" onclick="switchTab('products')">+ Adicionar Produto</button>
+                </div>
+
+                <!-- Lista de Tarefas -->
+                <div class="bg-white border border-[#E6EDE9] rounded-[20px] p-6 mb-8 shadow-sm">
+                    <div class="flex items-center justify-between pb-4 border-b border-[#E6EDE9] mb-5">
+                        <div class="flex items-center gap-3">
+                            <div class="w-11 h-11 bg-[#EAF5F0] rounded-xl flex items-center justify-center text-[20px]">🌅</div>
+                            <div>
+                                <h3 class="font-title text-[20px] text-[#33272A]">Passos da Manhã</h3>
+                                <p class="text-[#8F7C83] text-[12px]">Recomendado fazer ao acordar</p>
+                            </div>
+                        </div>
+                        <div class="text-[12px] font-bold text-[#57A470] bg-[#EAF5F0] px-3 py-1 rounded-full border border-[#E6EDE9]">08:00 AM</div>
+                    </div>
+
+                    <div class="flex flex-col gap-3">
+                        <div class="routine-item flex items-center p-3 border border-[#E6EDE9] rounded-2xl bg-[#FAFCFB] transition-all hover:bg-white hover:border-[#A6F4DC]" id="prod-1">
+                            <div class="w-8 h-8 flex items-center justify-center bg-[#CB93B5] text-white rounded-full font-title text-[14px] mr-4">1</div>
+                            <div class="flex-1">
+                                <h4 class="text-[15px] font-bold text-[#33272A]">Gel de Limpeza Suave</h4>
+                                <p class="text-[12px] text-[#8F7C83]">Limpeza profunda sem ressecar</p>
+                            </div>
+                            <button class="check-circle" onclick="toggleCheck('prod-1')"><i class="fa-solid fa-check"></i></button>
+                        </div>
+
+                        <div class="routine-item flex items-center p-3 border border-[#E6EDE9] rounded-2xl bg-[#FAFCFB] transition-all hover:bg-white hover:border-[#A6F4DC]" id="prod-2">
+                            <div class="w-8 h-8 flex items-center justify-center bg-[#CB93B5] text-white rounded-full font-title text-[14px] mr-4">2</div>
+                            <div class="flex-1">
+                                <h4 class="text-[15px] font-bold text-[#33272A]">Protetor Solar FPS 50</h4>
+                                <p class="text-[12px] text-[#8F7C83]">Proteção essencial diária</p>
+                            </div>
+                            <button class="check-circle" onclick="toggleCheck('prod-2')"><i class="fa-solid fa-check"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Widget Hidratação -->
+                <div class="bg-[#F0F8FF] rounded-[20px] p-6 mb-8 shadow-sm">
+                    <h3 class="font-title text-[24px] text-[#4A90E2] mb-1"><i class="fa-solid fa-droplet"></i> Meta de Hidratação</h3>
+                    <p class="text-[#555] text-[14px]">Beba água para ganhar moedas! (<span id="water-count" class="font-bold">0</span>/6 copos hoje)</p>
+                    
+                    <div class="flex justify-between mt-5 max-w-[400px] mx-auto">
+                        <button class="glass-btn w-12 h-14 flex items-center justify-center text-[24px]" id="glass-1" onclick="drinkWater(1)">💧</button>
+                        <button class="glass-btn w-12 h-14 flex items-center justify-center text-[24px]" id="glass-2" onclick="drinkWater(2)">💧</button>
+                        <button class="glass-btn w-12 h-14 flex items-center justify-center text-[24px]" id="glass-3" onclick="drinkWater(3)">💧</button>
+                        <button class="glass-btn w-12 h-14 flex items-center justify-center text-[24px]" id="glass-4" onclick="drinkWater(4)">💧</button>
+                        <button class="glass-btn w-12 h-14 flex items-center justify-center text-[24px]" id="glass-5" onclick="drinkWater(5)">💧</button>
+                        <button class="glass-btn w-12 h-14 flex items-center justify-center text-[24px]" id="glass-6" onclick="drinkWater(6)">💧</button>
+                    </div>
+                </div>
+
+                <!-- Progresso -->
+                <div class="bg-white border border-[#E6EDE9] rounded-[20px] p-8 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="font-title text-[26px] text-[#944654]">Seu Progresso</h2>
+                        <div class="font-title text-[32px] text-[#57A470]" id="progress-percent">0%</div>
+                    </div>
+                    <div class="w-full h-3 bg-[#E6EDE9] rounded-full overflow-hidden">
+                        <div class="h-full bg-gradient-to-r from-[#A6F4DC] to-[#57A470] rounded-full transition-all duration-500" style="width: 0%;" id="progress-bar-inner"></div>
+                    </div>
+                    <p class="text-[#8F7C83] text-[13px] mt-4">Você completou <strong id="completed-count" class="text-[#33272A]">0</strong> de 2 passos hoje. Continue assim!</p>
+                </div>
+            </div>
+
+            <div id="tab-products" class="tab-content animate-fade-in">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <div class="font-title text-[#57A470] text-[14px] tracking-wider mb-1">COLEÇÃO</div>
+                        <h2 class="font-title text-[28px] text-[#944654]">Meus Produtos</h2>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Produto Exemplo 1 -->
+                    <div class="bg-white border border-[#E6EDE9] rounded-[18px] p-5 flex flex-col gap-2 transition-transform hover:-translate-y-1 hover:border-[#A6F4DC] shadow-sm">
+                        <span class="self-start text-[10px] font-bold uppercase bg-[#EAF5F0] text-[#57A470] px-3 py-1 rounded-full">Limpeza</span>
+                        <h3 class="font-title text-[20px] text-[#33272A] mt-2">Gel Facial Suave</h3>
+                        <span class="text-[12px] font-semibold text-[#8F7C83]">Marca Exemplo</span>
+                        <p class="text-[13px] text-[#8F7C83] mt-2 leading-relaxed">Uso diário para controle de oleosidade e limpeza profunda sem agredir a barreira.</p>
+                    </div>
+                    <!-- Produto Exemplo 2 -->
+                    <div class="bg-white border border-[#E6EDE9] rounded-[18px] p-5 flex flex-col gap-2 transition-transform hover:-translate-y-1 hover:border-[#A6F4DC] shadow-sm">
+                        <span class="self-start text-[10px] font-bold uppercase bg-[#FFF0F0] text-[#FF6B6B] px-3 py-1 rounded-full">Proteção</span>
+                        <h3 class="font-title text-[20px] text-[#33272A] mt-2">Protetor Solar FPS 50</h3>
+                        <span class="text-[12px] font-semibold text-[#8F7C83]">SunCare</span>
+                        <p class="text-[13px] text-[#8F7C83] mt-2 leading-relaxed">Textura fluida, toque seco. Protege contra raios UVA/UVB e envelhecimento precoce.</p>
+                    </div>
+                     <div class="border-2 border-dashed border-[#E6EDE9] rounded-[18px] p-5 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-[#F4F9F6] transition-colors min-h-[160px]">
+                        <div class="w-10 h-10 rounded-full bg-[#EAF5F0] text-[#57A470] flex items-center justify-center text-xl mb-2">+</div>
+                        <p class="text-[#8F7C83] font-semibold text-sm">Adicionar Novo</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-shop" class="tab-content animate-fade-in">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <div class="font-title text-[#57A470] text-[14px] tracking-wider mb-1">SHOP</div>
+                        <h2 class="font-title text-[28px] text-[#944654]">Loja de Acessórios Lumi</h2>
+                    </div>
+                    <div class="bg-[#FFF9E6] border-2 border-[#FFD700] px-4 py-2 rounded-full font-bold text-[#333] flex items-center gap-2 shadow-sm">
+                        Seu Saldo: <i class="fa-solid fa-coins text-[#FFD700]"></i> <span id="shop-coin-counter">0</span>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                    <!-- Item 1 -->
+                    <div class="bg-white border border-[#E6EDE9] rounded-[18px] p-6 text-center shadow-sm hover:border-[#FFD700] transition-colors relative overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-[#FFD700] text-xs font-bold px-3 py-1 rounded-bl-lg">Novo</div>
+                        <div class="text-[4rem] mb-4 h-[80px] flex items-center justify-center">🎀</div>
+                        <h3 class="font-title text-[22px] text-[#33272A]">Laço Rosa</h3>
+                        <p class="text-[12px] text-[#8F7C83] mb-3">Um detalhe fofo para seu Lumi.</p>
+                        <span class="block font-bold text-[#FFB300] text-[18px] mb-4"><i class="fa-solid fa-coins"></i> 100</span>
+                        <button class="btn-primary w-full py-3" onclick="buyItem('laco', 100)">Comprar</button>
+                    </div>
+                    <!-- Item 2 -->
+                    <div class="bg-white border border-[#E6EDE9] rounded-[18px] p-6 text-center shadow-sm hover:border-[#FFD700] transition-colors">
+                        <div class="text-[4rem] mb-4 h-[80px] flex items-center justify-center">🕶️</div>
+                        <h3 class="font-title text-[22px] text-[#33272A]">Óculos Escuros</h3>
+                        <p class="text-[12px] text-[#8F7C83] mb-3">Estilo e proteção (virtual).</p>
+                        <span class="block font-bold text-[#FFB300] text-[18px] mb-4"><i class="fa-solid fa-coins"></i> 150</span>
+                        <button class="btn-primary w-full py-3" onclick="buyItem('oculos', 150)">Comprar</button>
+                    </div>
+                    <!-- Item 3 -->
+                    <div class="bg-white border border-[#E6EDE9] rounded-[18px] p-6 text-center shadow-sm hover:border-[#FFD700] transition-colors">
+                        <div class="text-[4rem] mb-4 h-[80px] flex items-center justify-center">👑</div>
+                        <h3 class="font-title text-[22px] text-[#33272A]">Coroa Dourada</h3>
+                        <p class="text-[12px] text-[#8F7C83] mb-3">Para a realeza do skincare.</p>
+                        <span class="block font-bold text-[#FFB300] text-[18px] mb-4"><i class="fa-solid fa-coins"></i> 300</span>
+                        <button class="btn-primary w-full py-3" onclick="buyItem('coroa', 300)">Comprar</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-diary" class="tab-content animate-fade-in">
+                <div class="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
+                    <div>
+                        <div class="font-title text-[#57A470] text-[14px] tracking-wider mb-1">EVOLUÇÃO</div>
+                        <h2 class="font-title text-[28px] text-[#944654]">Diário de Pele & Calendário</h2>
+                    </div>
+                    <div class="custom-input !mb-0 w-full md:w-auto min-w-[200px]">
+                        <select id="photo-interval" onchange="updateCalendarHighlights()">
+                            <option value="7">A cada 7 dias</option>
+                            <option value="10">A cada 10 dias</option>
+                            <option value="15" selected>A cada 15 dias</option>
+                            <option value="30">A cada 30 dias</option>
+                        </select>
+                        <label>Lembrar foto a cada:</label>
+                        <div class="input-line"></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Calendário (Ocupa 1 coluna) -->
+                    <div class="bg-white rounded-[20px] p-6 shadow-sm border border-[#E6EDE9] flex flex-col">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-title text-[20px] text-[#33272A]" id="calendar-month">Setembro 2026</h3>
+                            <div class="flex gap-2">
+                                <button class="w-8 h-8 rounded-full bg-[#EAF5F0] text-[#57A470] hover:bg-[#57A470] hover:text-white transition-colors"><i class="fa-solid fa-chevron-left"></i></button>
+                                <button class="w-8 h-8 rounded-full bg-[#EAF5F0] text-[#57A470] hover:bg-[#57A470] hover:text-white transition-colors"><i class="fa-solid fa-chevron-right"></i></button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-7 gap-1 text-center text-[#8F7C83] text-xs font-bold mb-2">
+                            <div>D</div><div>S</div><div>T</div><div>Q</div><div>Q</div><div>S</div><div>S</div>
+                        </div>
+                        <div id="calendar-body" class="calendar-grid flex-1">
+                            <!-- JS vai preencher os dias -->
+                        </div>
+                        <div class="mt-4 text-[11px] text-[#8F7C83] flex flex-col gap-1">
+                            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-[#CB93B5]"></span> Hoje</div>
+                            <div class="flex items-center gap-2"><span class="w-3 h-3 border-2 border-[#57A470] rounded-full"></span> Dia de Foto Registrada</div>
+                            <div class="flex items-center gap-2"><span class="w-3 h-3 border border-dashed border-[#57A470] bg-[#A6F4DC] rounded-full"></span> Próxima Foto Estimada</div>
+                        </div>
+                    </div>
+
+                    <!-- Upload de Fotos (Ocupa 2 colunas) -->
+                    <div class="lg:col-span-2 bg-[#FFF9E6] rounded-[20px] p-6 shadow-sm">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-title text-[22px] text-[#33272A]">Fotos de Hoje</h3>
+                            <button class="btn-primary px-4 py-2 text-sm" onclick="savePhotosToDate()">Salvar no Calendário</button>
+                        </div>
+                        <p class="text-[#8F7C83] text-[13px] mb-6">Tire as fotos sempre no mesmo lugar e com a mesma iluminação para melhor comparação.</p>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <!-- Foto Esquerda -->
+                            <div class="flex flex-col">
+                                <h4 class="text-center font-bold text-[#944654] mb-2 text-sm">Lado Esquerdo</h4>
+                                <label class="cursor-pointer group">
+                                    <div class="w-full aspect-[3/4] bg-white border-2 border-dashed border-[#CB93B5] rounded-xl flex flex-col items-center justify-center text-[#8F7C83] overflow-hidden relative group-hover:bg-[#fdf8fa] transition-colors">
+                                        <i class="fa-solid fa-camera text-3xl mb-2 text-[#CB93B5] group-hover:scale-110 transition-transform"></i>
+                                        <span class="text-xs font-semibold">Adicionar</span>
+                                        <img id="preview-left" class="absolute inset-0 w-full h-full object-cover hidden">
+                                    </div>
+                                    <input type="file" accept="image/*" class="hidden" onchange="loadPhoto(event, 'preview-left')">
+                                </label>
+                            </div>
+                            <!-- Foto Frente -->
+                            <div class="flex flex-col">
+                                <h4 class="text-center font-bold text-[#944654] mb-2 text-sm">Frente</h4>
+                                <label class="cursor-pointer group">
+                                    <div class="w-full aspect-[3/4] bg-white border-2 border-dashed border-[#CB93B5] rounded-xl flex flex-col items-center justify-center text-[#8F7C83] overflow-hidden relative group-hover:bg-[#fdf8fa] transition-colors">
+                                        <i class="fa-solid fa-camera text-3xl mb-2 text-[#CB93B5] group-hover:scale-110 transition-transform"></i>
+                                        <span class="text-xs font-semibold">Adicionar</span>
+                                        <img id="preview-front" class="absolute inset-0 w-full h-full object-cover hidden">
+                                    </div>
+                                    <input type="file" accept="image/*" class="hidden" onchange="loadPhoto(event, 'preview-front')">
+                                </label>
+                            </div>
+                            <!-- Foto Direita -->
+                            <div class="flex flex-col">
+                                <h4 class="text-center font-bold text-[#944654] mb-2 text-sm">Lado Direito</h4>
+                                <label class="cursor-pointer group">
+                                    <div class="w-full aspect-[3/4] bg-white border-2 border-dashed border-[#CB93B5] rounded-xl flex flex-col items-center justify-center text-[#8F7C83] overflow-hidden relative group-hover:bg-[#fdf8fa] transition-colors">
+                                        <i class="fa-solid fa-camera text-3xl mb-2 text-[#CB93B5] group-hover:scale-110 transition-transform"></i>
+                                        <span class="text-xs font-semibold">Adicionar</span>
+                                        <img id="preview-right" class="absolute inset-0 w-full h-full object-cover hidden">
+                                    </div>
+                                    <input type="file" accept="image/*" class="hidden" onchange="loadPhoto(event, 'preview-right')">
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-profile" class="tab-content animate-fade-in">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <div class="font-title text-[#57A470] text-[14px] tracking-wider mb-1">CONFIGURAÇÕES</div>
+                        <h2 class="font-title text-[28px] text-[#944654]">Meu Perfil</h2>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col md:flex-row gap-8 mt-5">
+                    <!-- Config Pessoais -->
+                    <div class="flex-1 bg-white p-8 rounded-[25px] shadow-sm border border-[#E6EDE9]">
+                        <h3 class="font-title text-[24px] text-[#944654]">Meus Dados</h3>
+                        <p class="text-[#8F7C83] text-[14px] mb-8">Atualize suas informações</p>
+                        
+                        <div class="custom-input mt-5">
+                            <input type="text" id="user-name-input" placeholder=" " oninput="updateUserName(this.value)" value="Usuário">
+                            <label>Como quer ser chamado?</label>
+                            <div class="input-line"></div>
+                        </div>
+                        <div class="custom-input mt-8">
+                            <select id="skin-type">
+                                <option value="mista">Mista</option>
+                                <option value="oleosa">Oleosa</option>
+                                <option value="seca">Seca</option>
+                                <option value="normal">Normal</option>
+                            </select>
+                            <label>Tipo de Pele</label>
+                            <div class="input-line"></div>
+                        </div>
+                    </div>
+
+                    <!-- Card do Lumi -->
+                    <div class="flex-1 bg-white p-8 rounded-[25px] shadow-sm border border-[#E6EDE9] flex flex-col items-center text-center">
+                        <h3 class="font-title text-[24px] text-[#944654]">Meu Lumi</h3>
+                        <p class="text-[#8F7C83] text-[14px] mb-4">Seu avatar companheiro</p>
+                        
+                        <div class="bg-[#F4F9F6] w-full rounded-[20px] py-10 flex justify-center items-center mb-6 border border-[#E6EDE9]">
+                            <!-- Avatar Preview -->
+                            <div class="lumi-avatar lumi-large" style="background-color: #FFB3BA;" id="profile-lumi-color">
+                                <div class="lumi-eyes-container"><div class="lumi-eye"></div><div class="lumi-eye"></div></div>
+                                <div class="lumi-cheeks"><div class="lumi-cheek"></div><div class="lumi-cheek"></div></div>
+                                <div class="lumi-mouth"></div>
+                                <div class="lumi-accessory" id="profile-lumi-accessory"></div>
+                            </div>
+                        </div>
+                        
+                        <button class="btn-primary w-full py-3" onclick="openModal()">Personalizar Lumi</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="text-center py-8 border-t border-[#E6EDE9] text-[#8F7C83] text-[12px] bg-white hidden md:block">
+            Gloomi Skincare Routine © 2026. Cuide de você todos os dias.
+        </footer>
+    </div>
+
+    <div id="customizer-modal" class="fixed inset-0 bg-[#2d272380] backdrop-blur-sm hidden items-center justify-center z-[999] opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-[28px] p-8 w-[90%] max-w-[440px] relative shadow-[0_20px_40px_rgba(0,0,0,0.15)] border-2 border-[#E6EDE9] max-h-[90vh] overflow-y-auto transform scale-95 transition-transform duration-300" id="modal-card">
+            <button class="absolute top-5 right-5 bg-transparent border-none text-[24px] text-[#8F7C83] cursor-pointer hover:text-[#944654]" onclick="closeModal()">×</button>
+            
+            <h2 class="font-title text-[28px] text-[#944654] text-center">Personalize seu Lumi</h2>
+            <p class="text-[14px] text-[#8F7C83] text-center mb-6">Deixe ele com a sua cara!</p>
+            
+            <!-- Palco do Avatar -->
+            <div class="bg-[#EAF5F0] rounded-[20px] h-[180px] flex items-center justify-center mb-6 relative overflow-hidden border border-[#E6EDE9]">
+                <div class="lumi-avatar lumi-large shadow-lg" id="modal-lumi-color" style="background-color: #FFB3BA;">
+                    <div class="lumi-eyes-container">
+                        <div class="lumi-eye" id="modal-eye-l"></div>
+                        <div class="lumi-eye" id="modal-eye-r"></div>
+                    </div>
+                    <div class="lumi-cheeks"><div class="lumi-cheek"></div><div class="lumi-cheek"></div></div>
+                    <div class="lumi-mouth"></div>
+                    <div class="lumi-accessory" id="modal-lumi-accessory"></div>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-5 mb-8">
+                <!-- Cores -->
+                <div>
+                    <label class="text-[12px] font-bold text-[#8F7C83] uppercase block mb-3">Cor do Lumi</label>
+                    <div class="flex gap-3 justify-center">
+                        <button class="w-10 h-10 rounded-full border-2 border-white shadow-md transition-transform hover:scale-110 color-btn border-gray-800 scale-110" style="background: #FFB3BA;" onclick="selectColor('#FFB3BA', this)"></button>
+                        <button class="w-10 h-10 rounded-full border-2 border-white shadow-md transition-transform hover:scale-110 color-btn" style="background: #BAE1FF;" onclick="selectColor('#BAE1FF', this)"></button>
+                        <button class="w-10 h-10 rounded-full border-2 border-white shadow-md transition-transform hover:scale-110 color-btn" style="background: #B9FBC0;" onclick="selectColor('#B9FBC0', this)"></button>
+                        <button class="w-10 h-10 rounded-full border-2 border-white shadow-md transition-transform hover:scale-110 color-btn" style="background: #E5C3FF;" onclick="selectColor('#E5C3FF', this)"></button>
+                    </div>
+                </div>
+                
+                <hr class="border-[#E6EDE9]">
+
+                <!-- Toggle Cílios -->
+                <div class="flex items-center justify-between px-2">
+                    <label class="text-[13px] font-bold text-[#8F7C83] m-0">Versão Feminina (Cílios)</label>
+                    <label class="switch">
+                        <input type="checkbox" onchange="toggleFeminine(this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <hr class="border-[#E6EDE9]">
+                
+                <!-- Acessório Comprado (Simulação simples no modal) -->
+                <div>
+                    <label class="text-[12px] font-bold text-[#8F7C83] uppercase block mb-3">Equipar Acessório</label>
+                    <select class="w-full p-2 border border-[#E6EDE9] rounded-lg text-[#333] bg-[#F4F9F6]" id="accessory-select" onchange="equipAccessory(this.value)">
+                        <option value="">Nenhum</option>
+                        <!-- Options populadas via JS baseadas nas compras -->
+                    </select>
+                </div>
+            </div>
+
+            <button class="btn-primary w-full py-4 text-[16px]" onclick="saveCustomization()">Salvar e Voltar</button>
+        </div>
+    </div>
+
+    <!-- Container de Toasts -->
+    <div id="toast-container"></div>
+
 </body>
 </html>
