@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gloomi — Sua Rotina de Skincare</title>
+    <meta name="description" content="Gloomi: seu assistente gamificado de skincare. Cuide da sua pele todos os dias com seu Lumi!">
+    <meta name="theme-color" content="#944654">
+
+    <!-- Fontes -->
+    <link href="https://fonts.googleapis.com/css2?family=Darumadrop+One&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ================================
+     SPLASH SCREEN
+================================= -->
+<div id="splash-screen" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity 0.8s ease">
+    <div class="splash-ring"></div>
+    <div class="splash-content">
+        <div class="splash-sparkle splash-sparkle--tl">✦</div>
+        <div class="splash-sparkle splash-sparkle--tr">✦</div>
+        <div class="splash-sparkle splash-sparkle--bl">✦</div>
+        <div class="splash-sparkle splash-sparkle--br">✦</div>
+        <div class="splash-logo">Gloomi ✦</div>
+        <div class="splash-tagline">Seu skincare, gamificado</div>
+        <div class="splash-dots">
+            <div class="splash-dot"></div>
+            <div class="splash-dot"></div>
+            <div class="splash-dot"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ================================
+     LOGIN SCREEN
+================================= -->
+<div id="login-screen" style="display:none">
+    <!-- Lado esquerdo — Hero -->
+    <div class="login-hero">
+        <!-- Blobs decorativos animados -->
+        <div class="hero-blob hero-blob--1"></div>
+        <div class="hero-blob hero-blob--2"></div>
+        <div class="hero-blob hero-blob--3"></div>
+        <div class="hero-blob hero-blob--4"></div>
+        <div class="hero-sparkle hero-sparkle--a">✦</div>
+        <div class="hero-sparkle hero-sparkle--b">✦</div>
+        <div class="hero-sparkle hero-sparkle--c">✦</div>
+
+        <div class="login-hero-lumi-wrapper">
+            <div class="hero-lumi-bg">
+                <!-- Lumi Decorativo no Hero -->
+                <div class="lumi-avatar lumi-large" style="background-color:#FFB3BA">
+                    <div class="lumi-eyes-container">
+                        <div class="lumi-eye left-eye fem"></div>
+                        <div class="lumi-eye right-eye fem"></div>
+                    </div>
+                    <div class="lumi-cheeks">
+                        <div class="lumi-cheek"></div>
+                        <div class="lumi-cheek"></div>
+                    </div>
+                    <div class="lumi-mouth happy"></div>
+                    <div class="lumi-accessory laco">🎀</div>
+                </div>
+            </div>
+        </div>
+        <h1>Bem-vinda ao<br>Gloomi ✦</h1>
+        <p>Seu assistente pessoal e gamificado para cuidar da sua pele todos os dias.</p>
+        <div class="feature-chips">
+            <span class="feature-chip">✦ Rotina Diária</span>
+            <span class="feature-chip">🎮 Gamificação</span>
+            <span class="feature-chip">🌡️ Índice UV</span>
+            <span class="feature-chip">📸 Diário de Fotos</span>
+            <span class="feature-chip">🪞 Avatar Lumi</span>
+        </div>
+    </div>
+
+    <!-- Lado direito — Form -->
+    <div class="login-form-side">
+        <div class="login-form-card">
+            <h2>Entrar</h2>
+            <p>Acesse sua conta ou crie uma nova agora!</p>
+
+            <div class="custom-input" style="margin-top:8px">
+                <input type="text" id="login-name" placeholder=" " autocomplete="off" onkeydown="handleLoginKey(event)">
+                <label>Seu nome de usuário</label>
+                <div class="input-line"></div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:12px;margin-top:28px">
+                <button class="btn-primary" style="padding:16px;font-size:16px;border-radius:14px" onclick="doLogin()">
+                    Acessar meu Gloomi ✦
+                </button>
+                <p style="font-size:12px;color:var(--text-muted);text-align:center">
+                    Seu progresso é salvo no navegador. Sem necessidade de senha.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================================
+     ONBOARDING
+================================= -->
+<div id="onboarding-screen" style="display:none">
+    <div class="onboarding-card">
+        <!-- Barra de progresso -->
+        <div class="ob-progress-bar">
+            <div class="ob-progress-fill" id="ob-progress-fill" style="width:33%"></div>
+        </div>
+        <div class="ob-step-indicator" id="ob-step-label">Passo 1 de 3</div>
+
+        <h3>Conhecendo sua pele ✦</h3>
+
+        <!-- Passo 1: Perfil -->
+        <div id="ob-step-1" style="display:flex;flex-direction:column;gap:18px">
+            <div class="custom-input">
+                <select id="ob-skin-type" required>
+                    <option value="" disabled selected></option>
+                    <option value="oleosa">🫧 Oleosa</option>
+                    <option value="mista">⚖️ Mista</option>
+                    <option value="seca">🌵 Seca</option>
+                    <option value="normal">🌿 Normal</option>
+                </select>
+                <label>Tipo de pele</label>
+                <div class="input-line"></div>
+            </div>
+
+            <div class="custom-input">
+                <select id="ob-skin-condition" required>
+                    <option value="" disabled selected></option>
+                    <option value="sensivel">🌸 Sensível</option>
+                    <option value="acneica">🔴 Acneica / Com espinhas</option>
+                    <option value="ressecada">❄️ Ressecada / Descamando</option>
+                    <option value="manchas">🟤 Com manchas</option>
+                    <option value="equilibrada">✅ Equilibrada</option>
+                </select>
+                <label>Como está sua pele hoje?</label>
+                <div class="input-line"></div>
+            </div>
+
+            <div class="custom-input">
+                <input type="number" id="ob-age" placeholder=" " min="10" max="100">
+                <label>Sua idade</label>
+                <div class="input-line"></div>
+            </div>
+
+            <button class="btn-primary" style="padding:16px;margin-top:8px" onclick="goToOnboardingStep(2)">
+                Próximo passo →
+            </button>
+        </div>
+
+        <!-- Passo 2: Experiência -->
+        <div id="ob-step-2" class="hidden" style="display:none;flex-direction:column;gap:14px">
+            <p style="text-align:center;color:var(--text-muted);font-size:15px;margin-bottom:8px">
+                Você já faz skincare regularmente?
+            </p>
+            <button class="option-card" onclick="setExperience(true)">
+                <div class="option-icon">✅</div>
+                <div class="option-text">
+                    <strong>Sim, já tenho o hábito!</strong>
+                    <span>Adicione seus produtos favoritos</span>
+                </div>
+            </button>
+            <button class="option-card" onclick="setExperience(false)">
+                <div class="option-icon">🌱</div>
+                <div class="option-text">
+                    <strong>Não, sou iniciante</strong>
+                    <span>O Gloomi cria uma rotina básica pra você</span>
+                </div>
+            </button>
+            <button class="btn-ghost" onclick="goToOnboardingStep(1)">← Voltar</button>
+        </div>
+
+        <!-- Passo 3A: Com experiência -->
+        <div id="ob-step-3a" class="hidden" style="display:none;flex-direction:column;gap:16px">
+            <p style="text-align:center;color:var(--text-muted);font-size:14px">
+                Qual produto você já usa? Pode adicionar mais depois!
+            </p>
+            <div class="custom-input">
+                <input type="text" id="ob-prod-name" placeholder=" ">
+                <label>Nome do produto (ex: Sabonete Facial)</label>
+                <div class="input-line"></div>
+            </div>
+            <button class="btn-primary" style="padding:16px" onclick="finishOnboarding('add_product')">
+                Entrar no Gloomi ✦
+            </button>
+            <button class="btn-ghost" onclick="finishOnboarding('skip')">Pular por enquanto</button>
+        </div>
+
+        <!-- Passo 3B: Iniciante -->
+        <div id="ob-step-3b" class="hidden" style="display:none;flex-direction:column;gap:16px;text-align:center">
+            <div style="font-size:3rem;animation:floatGlow 3s infinite">✨</div>
+            <p style="color:var(--text-muted);font-size:15px">
+                O Gloomi vai criar uma rotina básica e gentil para você começar hoje mesmo!
+            </p>
+            <button class="btn-primary" style="padding:16px" onclick="finishOnboarding('start_basic')">
+                Sim, vamos começar! ✦
+            </button>
+            <button class="btn-ghost" onclick="finishOnboarding('skip')">Pular por enquanto</button>
+        </div>
+    </div>
+</div>
+
+<!-- ================================
+     MAIN APP
+================================= -->
+<div id="main-app">
+
+    <!-- HEADER -->
+    <header id="app-header">
+        <button class="header-logo" onclick="switchTab('routine')">
+            Gloomi <span class="logo-dot">✦</span>
+        </button>
+
+        <nav class="header-nav">
+            <button class="nav-link active" data-tab="routine" onclick="switchTab('routine')">
+                <i class="fa-solid fa-house"></i> Minha Rotina
+            </button>
+            <button class="nav-link" data-tab="products" onclick="switchTab('products')">
+                <i class="fa-solid fa-bottle-droplet"></i> Produtos
+            </button>
+            <button class="nav-link" data-tab="diary" onclick="switchTab('diary')">
+                <i class="fa-solid fa-calendar-days"></i> Diário
+            </button>
+            <button class="nav-link" data-tab="shop" onclick="switchTab('shop')">
+                <i class="fa-solid fa-store"></i> Loja Lumi
+            </button>
+        </nav>
+
+        <div class="header-right">
+            <div class="coins-badge">
+                <i class="fa-solid fa-coins"></i>
+                <span class="coin-count">0</span>
+            </div>
+            <button class="header-avatar-btn" onclick="switchTab('profile')">
+                <!-- Mini Lumi -->
+                <div class="lumi-avatar lumi-mini" style="background-color:#FFB3BA" id="nav-lumi-color">
+                    <div class="lumi-eyes-container">
+                        <div class="lumi-eye left-eye"></div>
+                        <div class="lumi-eye right-eye"></div>
+                    </div>
+                    <div class="lumi-mouth happy"></div>
+                    <div class="lumi-accessory" id="nav-lumi-accessory"></div>
+                </div>
+                <span id="header-user-name">Meu Perfil</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- MOBILE BOTTOM NAV -->
+    <nav id="mobile-nav">
+        <button class="nav-link-mob active" data-tab="routine" onclick="switchTab('routine')">
+            <i class="fa-solid fa-house"></i>
+            <span>Rotina</span>
+        </button>
+        <button class="nav-link-mob" data-tab="products" onclick="switchTab('products')">
+            <i class="fa-solid fa-bottle-droplet"></i>
+            <span>Produtos</span>
+        </button>
+        <button class="nav-link-mob" data-tab="diary" onclick="switchTab('diary')">
+            <i class="fa-solid fa-calendar-days"></i>
+            <span>Diário</span>
+        </button>
+        <button class="nav-link-mob" data-tab="shop" onclick="switchTab('shop')">
+            <i class="fa-solid fa-store"></i>
+            <span>Loja</span>
+        </button>
+        <button class="nav-link-mob" data-tab="profile" onclick="switchTab('profile')">
+            <i class="fa-solid fa-user"></i>
+            <span>Perfil</span>
+        </button>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main>
+
+        <!-- ===== TAB: ROTINA ===== -->
+        <div id="tab-routine" class="tab-content active">
+
+            <!-- Welcome Banner -->
+            <div class="welcome-banner">
+                <div class="welcome-text">
+                    <span class="badge">DASHBOARD</span>
+                    <h1 id="welcome-title">Olá! Seu Lumi está pronto<br>para cuidar da sua pele. ✦</h1>
+                    <p>Acompanhe sua rotina, ganhe moedas e veja o índice UV local para proteger sua pele hoje.</p>
+                </div>
+                <div class="welcome-lumi-slot">
+                    <div class="lumi-avatar lumi-normal lumi-float" style="background-color:#FFB3BA" id="dash-lumi-color" onclick="petLumi()" title="Clique para fazer um carinho no Lumi! 💕">
+                        <div class="lumi-eyes-container">
+                            <div class="lumi-eye left-eye"></div>
+                            <div class="lumi-eye right-eye"></div>
+                        </div>
+                        <div class="lumi-cheeks">
+                            <div class="lumi-cheek"></div>
+                            <div class="lumi-cheek"></div>
+                        </div>
+                        <div class="lumi-mouth happy"></div>
+                        <div class="lumi-accessory" id="dash-lumi-accessory"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Streak & XP -->
+            <div class="streak-section">
+                <div class="streak-card">
+                    <div class="streak-icon">🔥</div>
+                    <div class="streak-info">
+                        <h3><span id="streak-count">1</span> dias</h3>
+                        <p>Sequência atual de skincare</p>
+                    </div>
+                </div>
+                <div class="xp-card">
+                    <div class="xp-card-header">
+                        <span id="level-label">Nível 1</span>
+                        <span id="xp-label" style="font-size:12px;color:var(--text-muted)">0 / 200 XP</span>
+                    </div>
+                    <div class="xp-bar-wrap">
+                        <div class="xp-bar" id="xp-bar" style="width:0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Widget UV -->
+            <div class="uv-widget">
+                <div class="uv-icon">☀️</div>
+                <div class="uv-info">
+                    <h3>Índice UV: <span id="uv-value-text" style="color:var(--text-muted)">Carregando...</span></h3>
+                    <p id="uv-tip-text">Buscando dados climáticos...</p>
+                </div>
+            </div>
+
+            <!-- Rotina Diária -->
+            <div class="routine-header">
+                <div>
+                    <div style="font-family:'Darumadrop One',cursive;font-size:12px;letter-spacing:3px;color:var(--jungle-green);text-transform:uppercase;margin-bottom:4px">HOJE</div>
+                    <div class="routine-title">Rotina da Manhã 🌅</div>
+                </div>
+                <button class="btn-primary" style="padding:10px 18px;font-size:13px" onclick="switchTab('products')">
+                    + Produto
+                </button>
+            </div>
+
+            <div class="routine-card">
+                <div class="routine-card-header">
+                    <div class="routine-card-header-left">
+                        <div class="routine-card-icon">🌅</div>
+                        <div class="routine-card-info">
+                            <h3>Passos da Manhã</h3>
+                            <p>Recomendado ao acordar</p>
+                        </div>
+                    </div>
+                    <div class="time-badge">08:00 AM</div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:12px" id="routine-list">
+                    <!-- Renderizado pelo JS -->
+                </div>
+            </div>
+
+            <!-- Widget Água -->
+            <div class="water-widget">
+                <h3><i class="fa-solid fa-droplet"></i> Meta de Hidratação</h3>
+                <p>Beba água para ganhar moedas! (<span id="water-count">0</span>/6 copos hoje)</p>
+                <div class="water-glasses">
+                    <button class="glass-btn" id="glass-1" onclick="drinkWater(1)" title="1 copo">💧</button>
+                    <button class="glass-btn" id="glass-2" onclick="drinkWater(2)" title="2 copos">💧</button>
+                    <button class="glass-btn" id="glass-3" onclick="drinkWater(3)" title="3 copos">💧</button>
+                    <button class="glass-btn" id="glass-4" onclick="drinkWater(4)" title="4 copos">💧</button>
+                    <button class="glass-btn" id="glass-5" onclick="drinkWater(5)" title="5 copos">💧</button>
+                    <button class="glass-btn" id="glass-6" onclick="drinkWater(6)" title="6 copos">💧</button>
+                </div>
+            </div>
+
+            <!-- Progresso do Dia -->
+            <div class="progress-card">
+                <div class="progress-card-header">
+                    <h2>Progresso de Hoje</h2>
+                    <div id="progress-percent">0%</div>
+                </div>
+                <div class="progress-bar-track">
+                    <div id="progress-bar-inner" style="width:0%"></div>
+                </div>
+                <p style="font-size:13px;color:var(--text-muted);margin-top:10px">
+                    Você completou <strong class="completed-count" style="color:var(--text-main)">0</strong> de
+                    <strong class="total-count" style="color:var(--text-main)">0</strong> passos hoje. Continue assim! 💪
+                </p>
+            </div>
+        </div>
+
+        <!-- ===== TAB: PRODUTOS ===== -->
+        <div id="tab-products" class="tab-content">
+            <div class="page-header" style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px">
+                <div>
+                    <div class="section-label">COLEÇÃO</div>
+                    <h2>Meus Produtos</h2>
+                </div>
+                <button class="btn-primary" style="padding:12px 22px" onclick="openAddProductModal()">
+                    <i class="fa-solid fa-plus"></i> Adicionar Produto
+                </button>
+            </div>
+            <div class="products-grid" id="products-grid">
+                <!-- Renderizado pelo JS -->
+            </div>
+        </div>
+
+        <!-- ===== TAB: DIÁRIO ===== -->
+        <div id="tab-diary" class="tab-content">
+            <div class="page-header" style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:16px">
+                <div>
+                    <div class="section-label">EVOLUÇÃO</div>
+                    <h2>Diário de Pele & Fotos</h2>
+                </div>
+                <div class="custom-input" style="margin-bottom:0;min-width:200px">
+                    <select id="photo-interval" onchange="updateCalendarHighlights()">
+                        <option value="7">A cada 7 dias</option>
+                        <option value="10">A cada 10 dias</option>
+                        <option value="15" selected>A cada 15 dias</option>
+                        <option value="30">A cada 30 dias</option>
+                    </select>
+                    <label>Lembrar foto a cada:</label>
+                    <div class="input-line"></div>
+                </div>
+            </div>
+
+            <div class="diary-grid">
+                <!-- Calendário -->
+                <div class="calendar-card">
+                    <div class="calendar-nav">
+                        <h3 id="calendar-month">Setembro 2026</h3>
+                        <div style="display:flex;gap:6px">
+                            <button class="calendar-nav-btn" onclick="prevMonth()"><i class="fa-solid fa-chevron-left"></i></button>
+                            <button class="calendar-nav-btn" onclick="nextMonth()"><i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    <div class="calendar-week-header">
+                        <div>D</div><div>S</div><div>T</div><div>Q</div><div>Q</div><div>S</div><div>S</div>
+                    </div>
+                    <div class="calendar-grid" id="calendar-body"></div>
+                    <div class="calendar-legend">
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background:var(--lilac)"></div>
+                            Hoje
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="border:2px solid var(--jungle-green)"></div>
+                            Foto Registrada
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background:var(--aquamarine);border:1.5px dashed var(--jungle-green)"></div>
+                            Próxima Foto Estimada
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upload de Fotos -->
+                <div class="photos-card">
+                    <div class="photos-card-header">
+                        <h3>📸 Fotos de Hoje</h3>
+                        <button class="btn-primary" style="padding:10px 18px;font-size:13px" onclick="savePhotosToDate()">
+                            Salvar no Calendário
+                        </button>
+                    </div>
+                    <p>Tire as fotos sempre no mesmo lugar e luz para melhor comparação. Ganha +50 moedas ao registrar!</p>
+                    <div class="photo-upload-grid">
+                        <!-- Esquerda -->
+                        <div class="photo-upload-slot">
+                            <h4>Lado Esquerdo</h4>
+                            <label class="photo-upload-label">
+                                <div class="photo-upload-box">
+                                    <i class="fa-solid fa-camera"></i>
+                                    <span>Adicionar</span>
+                                    <img id="preview-left" alt="Lado esquerdo">
+                                </div>
+                                <input type="file" accept="image/*" style="display:none" onchange="loadPhoto(event, 'preview-left')">
+                            </label>
+                        </div>
+                        <!-- Frente -->
+                        <div class="photo-upload-slot">
+                            <h4>Frente</h4>
+                            <label class="photo-upload-label">
+                                <div class="photo-upload-box">
+                                    <i class="fa-solid fa-camera"></i>
+                                    <span>Adicionar</span>
+                                    <img id="preview-front" alt="Frente">
+                                </div>
+                                <input type="file" accept="image/*" style="display:none" onchange="loadPhoto(event, 'preview-front')">
+                            </label>
+                        </div>
+                        <!-- Direita -->
+                        <div class="photo-upload-slot">
+                            <h4>Lado Direito</h4>
+                            <label class="photo-upload-label">
+                                <div class="photo-upload-box">
+                                    <i class="fa-solid fa-camera"></i>
+                                    <span>Adicionar</span>
+                                    <img id="preview-right" alt="Lado direito">
+                                </div>
+                                <input type="file" accept="image/*" style="display:none" onchange="loadPhoto(event, 'preview-right')">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== TAB: LOJA ===== -->
+        <div id="tab-shop" class="tab-content">
+            <div class="page-header" style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px">
+                <div>
+                    <div class="section-label">SHOP</div>
+                    <h2>Loja de Acessórios Lumi</h2>
+                </div>
+                <div class="coins-badge" style="font-size:15px">
+                    Saldo: <i class="fa-solid fa-coins"></i> <span class="coin-count">0</span>
+                </div>
+            </div>
+            <p style="color:var(--text-muted);font-size:14px;margin-bottom:24px">
+                Complete sua rotina diária, beba água e registre fotos para ganhar moedas! 
+                Use-as para personalizar seu Lumi com acessórios exclusivos. 🎁
+            </p>
+            <div class="shop-grid" id="shop-grid">
+                <!-- Renderizado pelo JS -->
+            </div>
+        </div>
+
+        <!-- ===== TAB: PERFIL ===== -->
+        <div id="tab-profile" class="tab-content">
+            <div class="page-header">
+                <div class="section-label">CONFIGURAÇÕES</div>
+                <h2>Meu Perfil</h2>
+            </div>
+
+            <div class="profile-grid">
+                <!-- Dados Pessoais -->
+                <div class="profile-card">
+                    <h3>Meus Dados</h3>
+                    <p>Atualize suas informações pessoais</p>
+
+                    <div class="custom-input" style="margin-top:8px">
+                        <input type="text" id="user-name-input" placeholder=" "
+                               oninput="updateUserNameFromInput(this.value)"
+                               onfocus="this.dataset.focused='1'"
+                               onblur="delete this.dataset.focused">
+                        <label>Como quer ser chamada?</label>
+                        <div class="input-line"></div>
+                    </div>
+
+                    <div class="custom-input">
+                        <select id="skin-type" onchange="saveSkinType(this.value)">
+                            <option value="oleosa">🫧 Oleosa</option>
+                            <option value="mista">⚖️ Mista</option>
+                            <option value="seca">🌵 Seca</option>
+                            <option value="normal">🌿 Normal</option>
+                        </select>
+                        <label>Tipo de Pele</label>
+                        <div class="input-line"></div>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <span class="stat-val coin-count">0</span>
+                            <span class="stat-label">Moedas</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-val" id="stat-streak">1</span>
+                            <span class="stat-label">Sequência</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-val" id="stat-level">1</span>
+                            <span class="stat-label">Nível</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-val" id="stat-products">0</span>
+                            <span class="stat-label">Produtos</span>
+                        </div>
+                    </div>
+
+                    <!-- Conquistas -->
+                    <div style="margin-top:24px">
+                        <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:12px">
+                            Conquistas
+                        </div>
+                        <div class="achievements-row" id="achievements-container"></div>
+                    </div>
+                </div>
+
+                <!-- Card do Lumi -->
+                <div class="profile-card" style="display:flex;flex-direction:column;align-items:center;text-align:center">
+                    <h3>Meu Lumi</h3>
+                    <p>Seu avatar companheiro de skincare</p>
+
+                    <!-- Preview Grande -->
+                    <div style="background:linear-gradient(135deg,var(--bg-highlight),#D4EDDE);width:100%;border-radius:var(--radius-md);padding:40px 0;display:flex;flex-direction:column;justify-content:center;align-items:center;margin-bottom:20px;border:1px solid var(--border-light);position:relative;overflow:hidden">
+                        <div class="lumi-avatar lumi-large lumi-float" style="background-color:#FFB3BA" id="profile-lumi-color" onclick="petLumi()" title="Clique para fazer um carinho no Lumi! 💕">
+                            <div class="lumi-eyes-container">
+                                <div class="lumi-eye left-eye"></div>
+                                <div class="lumi-eye right-eye"></div>
+                            </div>
+                            <div class="lumi-cheeks">
+                                <div class="lumi-cheek"></div>
+                                <div class="lumi-cheek"></div>
+                            </div>
+                            <div class="lumi-mouth happy"></div>
+                            <div class="lumi-accessory" id="profile-lumi-accessory"></div>
+                        </div>
+                        <span style="font-size:11px;font-weight:700;color:var(--rosewood);margin-top:16px;letter-spacing:0.5px">✦ Clique nele para interagir! ✦</span>
+                    </div>
+
+                    <button class="btn-primary" style="width:100%;padding:14px;font-size:15px" onclick="openCustomizerModal()">
+                        <i class="fa-solid fa-paintbrush"></i> Personalizar Lumi
+                    </button>
+
+                    <p style="font-size:12px;color:var(--text-muted);margin-top:10px">
+                        Compre acessórios na <strong style="color:var(--burnt-rose);cursor:pointer" onclick="switchTab('shop')">Loja Lumi</strong> para personalizar!
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer>
+        Gloomi Skincare Routine &copy; 2026 — Cuide de você todos os dias. 🌿
+    </footer>
+</div>
+
+
+<!-- ================================
+     MODAL: ADICIONAR PRODUTO
+================================= -->
+<div id="add-product-modal" class="modal-overlay" onclick="if(event.target===this) closeModal(this)">
+    <div class="modal-card">
+        <button class="modal-close" onclick="closeModal(document.getElementById('add-product-modal'))">×</button>
+        <div class="modal-title">Novo Produto ✦</div>
+        <div class="modal-subtitle">Adicione um produto à sua coleção</div>
+
+        <!-- Categoria -->
+        <div style="margin-bottom:20px">
+            <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px">Categoria</div>
+            <div class="category-grid">
+                <button class="category-chip selected" data-cat="limpeza" onclick="selectCategory('limpeza', this)">
+                    <span class="chip-icon">🫧</span>
+                    <span class="chip-label">Limpeza</span>
+                </button>
+                <button class="category-chip" data-cat="hidratacao" onclick="selectCategory('hidratacao', this)">
+                    <span class="chip-icon">💦</span>
+                    <span class="chip-label">Hidratação</span>
+                </button>
+                <button class="category-chip" data-cat="protecao" onclick="selectCategory('protecao', this)">
+                    <span class="chip-icon">🛡️</span>
+                    <span class="chip-label">Proteção</span>
+                </button>
+                <button class="category-chip" data-cat="tratamento" onclick="selectCategory('tratamento', this)">
+                    <span class="chip-icon">⚗️</span>
+                    <span class="chip-label">Tratamento</span>
+                </button>
+                <button class="category-chip" data-cat="tonico" onclick="selectCategory('tonico', this)">
+                    <span class="chip-icon">🌸</span>
+                    <span class="chip-label">Tônico</span>
+                </button>
+                <button class="category-chip" data-cat="esfoliante" onclick="selectCategory('esfoliante', this)">
+                    <span class="chip-icon">🔮</span>
+                    <span class="chip-label">Esfoliante</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="custom-input">
+            <input type="text" id="new-prod-name" placeholder=" ">
+            <label>Nome do Produto *</label>
+            <div class="input-line"></div>
+        </div>
+
+        <div class="custom-input">
+            <input type="text" id="new-prod-brand" placeholder=" ">
+            <label>Marca (opcional)</label>
+            <div class="input-line"></div>
+        </div>
+
+        <div class="custom-input">
+            <input type="text" id="new-prod-notes" placeholder=" ">
+            <label>Observações (ex: usar à noite)</label>
+            <div class="input-line"></div>
+        </div>
+
+        <button class="btn-primary" style="width:100%;padding:16px;font-size:15px;margin-top:8px" onclick="saveNewProduct()">
+            Adicionar à Coleção ✦
+        </button>
+    </div>
+</div>
+
+
+<!-- ================================
+     MODAL: PERSONALIZAR LUMI
+================================= -->
+<div id="customizer-modal" class="modal-overlay" onclick="if(event.target===this) closeModal(this)">
+    <div class="modal-card">
+        <button class="modal-close" onclick="closeModal(document.getElementById('customizer-modal'))">×</button>
+        <div class="modal-title">Personalizar Lumi ✦</div>
+        <div class="modal-subtitle">Deixe ele com a sua cara!</div>
+
+        <!-- Palco do Lumi -->
+        <div class="lumi-stage">
+            <div class="lumi-avatar lumi-large lumi-float shadow-lg" id="modal-lumi-color" style="background-color:#FFB3BA">
+                <div class="lumi-eyes-container">
+                    <div class="lumi-eye left-eye" id="modal-eye-l"></div>
+                    <div class="lumi-eye right-eye" id="modal-eye-r"></div>
+                </div>
+                <div class="lumi-cheeks">
+                    <div class="lumi-cheek"></div>
+                    <div class="lumi-cheek"></div>
+                </div>
+                <div class="lumi-mouth happy"></div>
+                <div class="lumi-accessory" id="modal-lumi-accessory"></div>
+            </div>
+        </div>
+
+        <!-- Opções -->
+        <div style="display:flex;flex-direction:column;gap:20px">
+
+            <!-- Cores -->
+            <div class="customizer-section">
+                <span class="customizer-section-label">Cor do Lumi</span>
+                <div class="color-picker">
+                    <button class="color-btn selected" style="background:#FFB3BA" data-color="#FFB3BA" onclick="selectColor('#FFB3BA', this)" title="Rosa bebê"></button>
+                    <button class="color-btn" style="background:#BAE1FF" data-color="#BAE1FF" onclick="selectColor('#BAE1FF', this)" title="Azul céu"></button>
+                    <button class="color-btn" style="background:#B9FBC0" data-color="#B9FBC0" onclick="selectColor('#B9FBC0', this)" title="Verde menta"></button>
+                    <button class="color-btn" style="background:#E5C3FF" data-color="#E5C3FF" onclick="selectColor('#E5C3FF', this)" title="Lilás"></button>
+                    <button class="color-btn" style="background:#FFE0B2" data-color="#FFE0B2" onclick="selectColor('#FFE0B2', this)" title="Pêssego"></button>
+                    <button class="color-btn" style="background:#F8BBD9" data-color="#F8BBD9" onclick="selectColor('#F8BBD9', this)" title="Pink"></button>
+                    <button class="color-btn" style="background:#FFFACD" data-color="#FFFACD" onclick="selectColor('#FFFACD', this)" title="Amarelo limão"></button>
+                    <button class="color-btn" style="background:#D4C5F9" data-color="#D4C5F9" onclick="selectColor('#D4C5F9', this)" title="Lavanda"></button>
+                </div>
+            </div>
+
+            <hr style="border-color:var(--border-light)">
+
+            <!-- Feminino -->
+            <div style="display:flex;align-items:center;justify-content:space-between">
+                <div>
+                    <div style="font-size:13px;font-weight:700;color:var(--text-main)">Versão com Cílios</div>
+                    <div style="font-size:12px;color:var(--text-muted)">Adiciona cílios ao Lumi</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="fem-toggle" onchange="toggleFeminine(this.checked)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <hr style="border-color:var(--border-light)">
+
+            <!-- Acessório -->
+            <div class="customizer-section">
+                <span class="customizer-section-label">Equipar Acessório</span>
+                <select id="accessory-select"
+                        style="width:100%;padding:12px;border:1.5px solid var(--border-light);border-radius:var(--radius-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;color:var(--text-main);background:var(--bg-body);outline:none"
+                        onchange="equipAccessory(this.value)">
+                    <option value="">Nenhum</option>
+                    <!-- Populado via JS -->
+                </select>
+                <p style="font-size:12px;color:var(--text-muted);margin-top:8px">
+                    Compre acessórios na <strong style="color:var(--burnt-rose);cursor:pointer" onclick="closeModal(document.getElementById('customizer-modal'));switchTab('shop')">Loja Lumi</strong> para equipar aqui!
+                </p>
+            </div>
+        </div>
+
+        <button class="btn-primary" style="width:100%;padding:16px;font-size:15px;margin-top:24px" onclick="saveCustomization()">
+            Salvar e Aplicar ✦
+        </button>
+    </div>
+</div>
+
+
+<!-- Toast Container -->
+<div id="toast-container"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
