@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gloomi — Sua Rotina de Skincare</title>
+    <title>Gloomi ✦ — Skincare Gamificado</title>
     <meta name="description" content="Gloomi: seu assistente gamificado de skincare. Cuide da sua pele todos os dias com seu Lumi!">
-    <meta name="theme-color" content="#944654">
+    <meta name="theme-color" content="#B5436A">
 
     <!-- Fontes -->
-    <link href="https://fonts.googleapis.com/css2?family=Darumadrop+One&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Darumadrop+One&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
     <!-- Ícones -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <!-- CSS -->
@@ -127,7 +127,6 @@
                     <option value="normal">🌿 Normal</option>
                 </select>
                 <label>Tipo de pele</label>
-                <div class="input-line"></div>
             </div>
 
             <div class="custom-input">
@@ -140,23 +139,21 @@
                     <option value="equilibrada">✅ Equilibrada</option>
                 </select>
                 <label>Como está sua pele hoje?</label>
-                <div class="input-line"></div>
             </div>
 
             <div class="custom-input">
-                <input type="number" id="ob-age" placeholder=" " min="10" max="100">
+                <input type="number" id="ob-age" placeholder="Ex: 24" min="10" max="100">
                 <label>Sua idade</label>
-                <div class="input-line"></div>
             </div>
 
-            <button class="btn-primary" style="padding:16px;margin-top:8px" onclick="goToOnboardingStep(2)">
-                Próximo passo →
+            <button class="btn-primary" style="padding:16px;margin-top:4px" onclick="goToOnboardingStep(2)">
+                Próximo →
             </button>
         </div>
 
         <!-- Passo 2: Experiência -->
         <div id="ob-step-2" class="hidden" style="display:none;flex-direction:column;gap:14px">
-            <p style="text-align:center;color:var(--text-muted);font-size:15px;margin-bottom:8px">
+            <p style="text-align:center;color:var(--text-2);font-size:15px;margin-bottom:4px">
                 Você já faz skincare regularmente?
             </p>
             <button class="option-card" onclick="setExperience(true)">
@@ -178,13 +175,12 @@
 
         <!-- Passo 3A: Com experiência -->
         <div id="ob-step-3a" class="hidden" style="display:none;flex-direction:column;gap:16px">
-            <p style="text-align:center;color:var(--text-muted);font-size:14px">
+            <p style="text-align:center;color:var(--text-2);font-size:14px">
                 Qual produto você já usa? Pode adicionar mais depois!
             </p>
             <div class="custom-input">
-                <input type="text" id="ob-prod-name" placeholder=" ">
-                <label>Nome do produto (ex: Sabonete Facial)</label>
-                <div class="input-line"></div>
+                <input type="text" id="ob-prod-name" placeholder="Ex: Sabonete Facial La Roche">
+                <label>Nome do Produto</label>
             </div>
             <button class="btn-primary" style="padding:16px" onclick="finishOnboarding('add_product')">
                 Entrar no Gloomi ✦
@@ -194,12 +190,12 @@
 
         <!-- Passo 3B: Iniciante -->
         <div id="ob-step-3b" class="hidden" style="display:none;flex-direction:column;gap:16px;text-align:center">
-            <div style="font-size:3rem;animation:floatGlow 3s infinite">✨</div>
-            <p style="color:var(--text-muted);font-size:15px">
+            <div style="font-size:3rem;animation:float-gentle 3s infinite">✨</div>
+            <p style="color:var(--text-2);font-size:15px;line-height:1.6">
                 O Gloomi vai criar uma rotina básica e gentil para você começar hoje mesmo!
             </p>
             <button class="btn-primary" style="padding:16px" onclick="finishOnboarding('start_basic')">
-                Sim, vamos começar! ✦
+                Vamos começar! ✦
             </button>
             <button class="btn-ghost" onclick="finishOnboarding('skip')">Pular por enquanto</button>
         </div>
