@@ -83,20 +83,34 @@
     <div class="login-form-side">
         <div class="login-form-card">
             <h2>Entrar</h2>
-            <p>Acesse sua conta ou crie uma nova agora!</p>
+            <p>Acesse com sua conta do Google para sincronizar tudo na nuvem, ou continue como convidada!</p>
+
+            <!-- Botão de Login com Google -->
+            <button class="btn-google" id="btn-google-login" onclick="loginWithGoogle()">
+                <svg viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                </svg>
+                <span>Entrar com o Google</span>
+            </button>
+
+            <div class="login-divider">
+                <span>ou acesse pelo nome</span>
+            </div>
 
             <div class="custom-input" style="margin-top:8px">
                 <input type="text" id="login-name" placeholder=" " autocomplete="off" onkeydown="handleLoginKey(event)">
                 <label>Seu nome de usuário</label>
-                <div class="input-line"></div>
             </div>
 
-            <div style="display:flex;flex-direction:column;gap:12px;margin-top:28px">
-                <button class="btn-primary" style="padding:16px;font-size:16px;border-radius:14px" onclick="doLogin()">
-                    Acessar meu Gloomi ✦
+            <div style="display:flex;flex-direction:column;gap:12px;margin-top:20px">
+                <button class="btn-primary" style="padding:15px;font-size:15px;border-radius:14px" onclick="doLogin()">
+                    Continuar como Convidada ✦
                 </button>
-                <p style="font-size:12px;color:var(--text-muted);text-align:center">
-                    Seu progresso é salvo no navegador. Sem necessidade de senha.
+                <p style="font-size:12px;color:var(--text-3);text-align:center;line-height:1.5">
+                    <span id="firebase-status-hint">☁️ Conectado ao Firebase Cloud</span>
                 </p>
             </div>
         </div>
@@ -531,8 +545,24 @@
             </div>
 
             <div class="profile-grid">
-                <!-- Dados Pessoais -->
+                <!-- Dados Pessoais & Conta -->
                 <div class="profile-card">
+                    <!-- Box de Status de Conta Firebase / Google -->
+                    <div class="account-info-box" id="account-info-box">
+                        <div class="account-user-meta">
+                            <div id="account-avatar-slot">
+                                <div class="account-user-placeholder" id="account-user-initial">G</div>
+                            </div>
+                            <div class="account-user-details">
+                                <h4 id="account-user-name">Usuária Convidada</h4>
+                                <span id="account-user-email">Progresso salvo localmente</span>
+                            </div>
+                        </div>
+                        <button class="btn-logout" id="btn-account-action" onclick="handleAccountAction()">
+                            <i class="fa-solid fa-arrow-right-from-bracket"></i> Sair
+                        </button>
+                    </div>
+
                     <h3>Meus Dados</h3>
                     <p>Atualize suas informações pessoais</p>
 
@@ -542,7 +572,6 @@
                                onfocus="this.dataset.focused='1'"
                                onblur="delete this.dataset.focused">
                         <label>Como quer ser chamada?</label>
-                        <div class="input-line"></div>
                     </div>
 
                     <div class="custom-input">
@@ -775,6 +804,13 @@
 <!-- Toast Container -->
 <div id="toast-container"></div>
 
+<!-- Firebase SDKs (Compat v10) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<!-- Gloomi Firebase Config & App Logic -->
+<script src="firebase-config.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

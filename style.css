@@ -623,6 +623,154 @@ body {
 }
 .btn-ghost:hover { color: var(--brand); }
 
+/* === BOTÃO GOOGLE LIQUID GLASS === */
+.btn-google {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    padding: 14px 20px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    color: #33272A;
+    border: 1.5px solid rgba(255, 255, 255, 0.95);
+    border-radius: var(--r-md);
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(181, 67, 106, 0.10),
+                0 1px 0 rgba(255, 255, 255, 0.95) inset;
+    transition: transform var(--t-normal) var(--ease-spring),
+                box-shadow var(--t-normal) var(--ease-out),
+                background var(--t-fast);
+}
+.btn-google:hover {
+    transform: translateY(-3px) scale(1.01);
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 12px 30px rgba(181, 67, 106, 0.16),
+                0 0 0 3px rgba(255, 180, 200, 0.3);
+}
+.btn-google:active {
+    transform: translateY(1px) scale(0.98);
+    box-shadow: 0 4px 12px rgba(181, 67, 106, 0.1);
+}
+.btn-google svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+/* Divisor no form de login */
+.login-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 20px 0 16px;
+    color: var(--text-3);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+.login-divider::before,
+.login-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid rgba(180, 140, 160, 0.22);
+}
+.login-divider span {
+    padding: 0 12px;
+}
+
+/* Badge de conta e sincronização */
+.account-info-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 16px 20px;
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(16px);
+    border: 1.5px solid rgba(255, 255, 255, 0.95);
+    border-radius: var(--r-md);
+    margin-bottom: 20px;
+    box-shadow: 0 6px 20px rgba(100, 40, 60, 0.06);
+}
+.account-user-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    overflow: hidden;
+}
+.account-user-photo {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #FFFFFF;
+    box-shadow: 0 4px 12px rgba(181, 67, 106, 0.2);
+}
+.account-user-placeholder {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--brand-light), var(--brand));
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 18px;
+    box-shadow: 0 4px 12px rgba(181, 67, 106, 0.2);
+}
+.account-user-details h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-1);
+    margin-bottom: 2px;
+}
+.account-user-details span {
+    font-size: 11px;
+    color: var(--text-2);
+    display: block;
+}
+.btn-logout {
+    padding: 8px 16px;
+    background: rgba(220, 80, 80, 0.08);
+    border: 1px solid rgba(220, 80, 80, 0.25);
+    color: #C04040;
+    border-radius: var(--r-pill);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all var(--t-fast);
+    font-family: "Plus Jakarta Sans", sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.btn-logout:hover {
+    background: rgba(220, 80, 80, 0.18);
+    transform: translateY(-1px);
+}
+.cloud-sync-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: var(--r-pill);
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(79, 174, 130, 0.15);
+    color: #1E6645;
+    border: 1px solid rgba(79, 174, 130, 0.3);
+}
+
 /* === HEADER === */
 #app-header {
     height: 70px;

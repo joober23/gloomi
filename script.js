@@ -36,12 +36,38 @@ let state = {
 
 let tempUserData = {};
 let currentUser = null;
+let firebaseUser = null;
 
 /* ============ 2. INICIALIZAÇÃO ============ */
 window.onload = () => {
     animateSplash();
     updateCoinsUI();
+    initFirebaseIntegration();
 };
+
+function initFirebaseIntegration() {
+    const hintEl = document.getElementById('firebase-status-hint');
+    const isConfigured = window.gloomiFirebase && window.gloomiFirebase.isConfigured;
+
+    if (hintEl) {
+        if (isConfigured) {
+            hintEl.innerHTML = '☁️ <span style="color:#2E7D32;font-weight:700">Firebase Conectado</span> (Google Login & Firestore ativos)';
+        } else {
+            hintEl.innerHTML = '💡 Firebase em modo local. Insira suas chaves em <code>firebase-config.js</code>';
+        }
+    }
+
+    // Se o Firebase estiver configurado, escuta mudanças de autenticação
+    if (isConfigured && window.gloomiFirebase.auth) {
+        window.gloomiFirebase.auth.onAuthStateChanged(user => {
+            if (user) {
+                firebaseUser = user;
+                currentUser = user.uid;
+                console.log('[Gloomi Firebase] Usuário detectado na sessão:', user.displayName || user.email);
+            }
+        });
+    }
+}
 
 function animateSplash() {
     setTimeout(() => {
@@ -62,7 +88,113 @@ function showLoginScreen() {
     renderCalendar();
 }
 
-/* ============ 3. LOGIN / ONBOARDING ============ */
+/* ============ 3. LOGIN COM GOOGLE & LOCAL / ONBOARDING ============ */
+async function loginWithGoogle() {
+    const btn = document.getElementById('btn-google-login');
+    const isConfigured = window.gloomiFirebase && window.gloomiFirebase.isConfigured;
+
+    if (!isConfigured) {
+        showToast('💡 Configure suas chaves do Firebase em "firebase-config.js" para ativar o login com Google! Você pode entrar como convidada abaixo.', 'warning');
+        const loginInput = document.getElementById('login-name');
+        if (loginInput) {
+            loginInput.focus();
+            loginInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
+    }
+
+    try {
+        if (btn) btn.style.opacity = '0.6';
+        showToast('Conectando com o Google... ✦', 'info');
+
+        const provider = new firebase.auth.GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+
+        const result = await window.gloomiFirebase.auth.signInWithPopup(provider);
+        const user = result.user;
+        firebaseUser = user;
+        currentUser = user.uid;
+
+        showToast(`Autenticado com sucesso! Olá, ${user.displayName || 'você'} ✨`, 'success');
+
+        // Carrega ou inicializa no Firestore
+        await loadFromFirestoreOrInit(user);
+
+    } catch (err) {
+        console.error('[Gloomi Firebase Login Error]:', err);
+        if (btn) btn.style.opacity = '1';
+
+        if (err.code === 'auth/popup-closed-by-user') {
+            showToast('Login com o Google cancelado.', 'info');
+        } else if (err.code === 'auth/operation-not-allowed') {
+            showToast('⚠️ Ative o provedor "Google" em Firebase Console > Authentication > Sign-in method.', 'warning');
+        } else if (err.code === 'auth/unauthorized-domain') {
+            showToast('⚠️ Domínio não autorizado. Adicione seu domínio no console do Firebase.', 'warning');
+        } else {
+            showToast('Erro ao autenticar com o Google: ' + (err.message || 'Verifique o console.'), 'warning');
+        }
+    } finally {
+        if (btn) btn.style.opacity = '1';
+    }
+}
+
+async function loadFromFirestoreOrInit(user) {
+    const db = window.gloomiFirebase.db;
+    const loginScreen = document.getElementById('login-screen');
+
+    if (!db) {
+        // Fallback local se o Firestore não estiver ativo
+        state.userName = user.displayName || 'Gloomi Lover';
+        state.userEmail = user.email;
+        state.userPhoto = user.photoURL;
+        loginScreen.style.opacity = '0';
+        setTimeout(() => {
+            loginScreen.style.display = 'none';
+            showMainApp();
+        }, 600);
+        return;
+    }
+
+    try {
+        const userDocRef = db.collection('users').doc(user.uid);
+        const docSnap = await userDocRef.get();
+
+        loginScreen.style.opacity = '0';
+
+        setTimeout(() => {
+            loginScreen.style.display = 'none';
+
+            if (docSnap.exists) {
+                const cloudData = docSnap.data();
+                loadUserState(cloudData);
+                // Atualiza dados do Google caso tenham mudado
+                state.userName = state.userName || user.displayName || 'Gloomi Lover';
+                state.userEmail = user.email;
+                state.userPhoto = user.photoURL;
+                showMainApp();
+                setTimeout(() => showToast(`Dados sincronizados da nuvem! ☁️`, 'success'), 400);
+            } else {
+                // Primeira vez: inicia onboarding com nome do Google pré-preenchido
+                tempUserData.name = user.displayName ? user.displayName.split(' ')[0] : 'Gloomi Lover';
+                state.userEmail = user.email;
+                state.userPhoto = user.photoURL;
+                showOnboardingScreen();
+            }
+        }, 600);
+
+    } catch (err) {
+        console.warn('[Gloomi Firebase] Falha ao ler Firestore, usando sessão local:', err);
+        loginScreen.style.opacity = '0';
+        setTimeout(() => {
+            loginScreen.style.display = 'none';
+            state.userName = user.displayName || 'Gloomi Lover';
+            state.userEmail = user.email;
+            state.userPhoto = user.photoURL;
+            showMainApp();
+        }, 600);
+    }
+}
+
 function doLogin() {
     const loginName = document.getElementById('login-name').value.trim();
     if (!loginName) {
@@ -108,6 +240,11 @@ function loadUserState(saved) {
     if (!state.level) state.level = 1;
     if (!state.streak) state.streak = 0;
     if (!state.lumi) state.lumi = { color: '#FFB3BA', isFemale: false, accessory: '', mood: 'happy' };
+
+    // Checar streak
+    checkDailyStreak();
+    updateAllUI();
+}
 
     // Checar streak
     checkDailyStreak();
@@ -210,8 +347,7 @@ function finishOnboarding(action) {
         }
     }
 
-    const storageKey = 'gloomi_user_' + tempUserData.name.toLowerCase();
-    localStorage.setItem(storageKey, JSON.stringify(state));
+    saveState();
 
     const ob = document.getElementById('onboarding-screen');
     ob.style.opacity = '0';
@@ -823,7 +959,78 @@ function renderProfileStats() {
     const nameInput = document.getElementById('user-name-input');
     if (nameInput) { nameInput.value = state.userName || ''; nameInput.dataset.focused = ''; }
 
+    updateAccountUI();
     renderAchievements();
+}
+
+function updateAccountUI() {
+    const nameEl = document.getElementById('account-user-name');
+    const emailEl = document.getElementById('account-user-email');
+    const avatarSlot = document.getElementById('account-avatar-slot');
+    const actionBtn = document.getElementById('btn-account-action');
+
+    const isGoogle = Boolean(firebaseUser);
+    const displayName = state.userName || (firebaseUser && firebaseUser.displayName) || 'Usuária Gloomi';
+    const email = state.userEmail || (firebaseUser && firebaseUser.email) || 'Modo Convidada (Local)';
+    const photoURL = state.userPhoto || (firebaseUser && firebaseUser.photoURL);
+
+    if (nameEl) nameEl.textContent = displayName;
+    if (emailEl) {
+        if (isGoogle) {
+            emailEl.innerHTML = `<span class="cloud-sync-pill"><i class="fa-solid fa-cloud"></i> Google: ${escHtml(email)}</span>`;
+        } else {
+            emailEl.textContent = 'Salvo no navegador (Modo Convidada)';
+        }
+    }
+
+    if (avatarSlot) {
+        if (photoURL) {
+            avatarSlot.innerHTML = `<img src="${escHtml(photoURL)}" alt="Avatar" class="account-user-photo" onerror="this.onerror=null;this.replaceWith(document.createElement('div'))">`;
+        } else {
+            const initial = displayName.charAt(0).toUpperCase() || 'G';
+            avatarSlot.innerHTML = `<div class="account-user-placeholder">${initial}</div>`;
+        }
+    }
+
+    if (actionBtn) {
+        if (isGoogle) {
+            actionBtn.innerHTML = `<i class="fa-solid fa-arrow-right-from-bracket"></i> Sair`;
+            actionBtn.className = 'btn-logout';
+        } else {
+            actionBtn.innerHTML = `<i class="fa-brands fa-google"></i> Conectar`;
+            actionBtn.className = 'btn-logout';
+            actionBtn.style.color = '#1E6645';
+            actionBtn.style.borderColor = 'rgba(79,174,130,0.3)';
+            actionBtn.style.background = 'rgba(79,174,130,0.08)';
+        }
+    }
+}
+
+function handleAccountAction() {
+    if (firebaseUser) {
+        logout();
+    } else {
+        loginWithGoogle();
+    }
+}
+
+function logout() {
+    if (window.gloomiFirebase && window.gloomiFirebase.auth) {
+        window.gloomiFirebase.auth.signOut().catch(e => console.warn(e));
+    }
+    firebaseUser = null;
+    currentUser = null;
+
+    showToast('Você saiu da conta. Até logo! ✦', 'info');
+
+    const mainApp = document.getElementById('main-app');
+    if (mainApp) mainApp.style.display = 'none';
+
+    const loginScreen = document.getElementById('login-screen');
+    if (loginScreen) {
+        loginScreen.style.display = 'flex';
+        setTimeout(() => { loginScreen.style.opacity = '1'; }, 30);
+    }
 }
 
 function updateUserNameFromInput(val) {
@@ -926,10 +1133,40 @@ function triggerConfetti() {
     }
 }
 
-/* ============ 19. SAVE / LOAD ============ */
+/* ============ 19. SAVE / LOAD & FIRESTORE SYNC ============ */
+let firestoreSyncTimeout = null;
+
 function saveState() {
     if (!currentUser) return;
+
+    // 1. Persistência local imediata
     localStorage.setItem('gloomi_user_' + currentUser, JSON.stringify(state));
+
+    // 2. Sincronização na nuvem com Firebase Firestore
+    if (firebaseUser && window.gloomiFirebase && window.gloomiFirebase.db) {
+        clearTimeout(firestoreSyncTimeout);
+        firestoreSyncTimeout = setTimeout(() => {
+            syncStateToFirestore();
+        }, 600);
+    }
+}
+
+function syncStateToFirestore() {
+    if (!firebaseUser || !window.gloomiFirebase.db) return;
+
+    const dataToSave = {
+        ...state,
+        lastSyncedAt: new Date().toISOString()
+    };
+
+    window.gloomiFirebase.db.collection('users').doc(firebaseUser.uid)
+        .set(dataToSave, { merge: true })
+        .then(() => {
+            console.log('[Gloomi Firebase] Sincronizado com sucesso no Firestore!');
+        })
+        .catch(err => {
+            console.warn('[Gloomi Firebase] Falha ao sincronizar com Firestore:', err);
+        });
 }
 
 /* ============ 20. UTILITÁRIOS ============ */
