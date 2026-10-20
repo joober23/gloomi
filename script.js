@@ -62,7 +62,7 @@ function initFirebaseIntegration() {
         if (isConfigured) {
             hintEl.innerHTML = '☁️ <span style="color:#2E7D32;font-weight:700">Firebase Conectado</span> (Google Login & Firestore ativos)';
         } else {
-            hintEl.innerHTML = '💡 Firebase em modo local. Insira suas chaves em <code>firebase-config.js</code>';
+            hintEl.innerHTML = '💡 Firebase em modo de demonstração. Verifique <code>firebase-config.js</code>';
         }
     }
 
@@ -72,7 +72,20 @@ function initFirebaseIntegration() {
             if (user) {
                 firebaseUser = user;
                 currentUser = user.uid;
-                console.log('[Gloomi Firebase] Usuário detectado na sessão:', user.displayName || user.email);
+                console.log('[Gloomi Firebase] Sessão ativa detectada:', user.displayName || user.email);
+                
+                // Se o app principal ou onboarding ainda não foram abertos, sincroniza com Firestore
+                const mainApp = document.getElementById('main-app');
+                const obScreen = document.getElementById('onboarding-screen');
+                const isMainAppVisible = mainApp && mainApp.style.display === 'block';
+                const isObVisible = obScreen && obScreen.style.display === 'flex';
+
+                if (!isMainAppVisible && !isObVisible) {
+                    loadFromFirestoreOrInit(user);
+                }
+            } else {
+                firebaseUser = null;
+                currentUser = null;
             }
         });
     }
@@ -114,23 +127,21 @@ function showLoginScreen() {
     renderCalendar();
 }
 
-/* ============ 3. LOGIN COM GOOGLE & LOCAL / ONBOARDING ============ */
+/* ============ 3. LOGIN COM GOOGLE & CADASTRO (FIRESTORE) ============ */
 async function loginWithGoogle() {
     const btn = document.getElementById('btn-google-login');
     const isConfigured = window.gloomiFirebase && window.gloomiFirebase.isConfigured;
 
     if (!isConfigured) {
-        showToast('💡 Configure suas chaves do Firebase em "firebase-config.js" para ativar o login com Google! Você pode entrar como convidada abaixo.', 'warning');
-        const loginInput = document.getElementById('login-name');
-        if (loginInput) {
-            loginInput.focus();
-            loginInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
+        showToast('💡 Quase lá! Configure suas credenciais em "firebase-config.js".', 'warning');
         return;
     }
 
     try {
-        if (btn) btn.style.opacity = '0.6';
+        if (btn) {
+            btn.style.opacity = '0.7';
+            btn.style.pointerEvents = 'none';
+        }
         showToast('Conectando com o Google... ✦', 'info');
 
         const provider = new firebase.auth.GoogleAuthProvider();
@@ -141,26 +152,25 @@ async function loginWithGoogle() {
         firebaseUser = user;
         currentUser = user.uid;
 
-        showToast(`Autenticado com sucesso! Olá, ${user.displayName || 'você'} ✨`, 'success');
-
-        // Carrega ou inicializa no Firestore
+        // Verifica no Firestore se o usuário já tem cadastro concluído ou se precisa preencher o questionário
         await loadFromFirestoreOrInit(user);
 
     } catch (err) {
         console.error('[Gloomi Firebase Login Error]:', err);
-        if (btn) btn.style.opacity = '1';
-
         if (err.code === 'auth/popup-closed-by-user') {
-            showToast('Login com o Google cancelado.', 'info');
+            showToast('Login cancelado.', 'info');
         } else if (err.code === 'auth/operation-not-allowed') {
             showToast('⚠️ Ative o provedor "Google" em Firebase Console > Authentication > Sign-in method.', 'warning');
         } else if (err.code === 'auth/unauthorized-domain') {
-            showToast('⚠️ Domínio não autorizado. Adicione seu domínio no console do Firebase.', 'warning');
+            showToast('⚠️ Adicione este domínio aos Domínios Autorizados no console do Firebase.', 'warning');
         } else {
-            showToast('Erro ao autenticar com o Google: ' + (err.message || 'Verifique o console.'), 'warning');
+            showToast('Erro ao entrar com Google: ' + (err.message || 'Tente novamente.'), 'warning');
         }
     } finally {
-        if (btn) btn.style.opacity = '1';
+        if (btn) {
+            btn.style.opacity = '1';
+            btn.style.pointerEvents = 'all';
+        }
     }
 }
 
@@ -169,15 +179,7 @@ async function loadFromFirestoreOrInit(user) {
     const loginScreen = document.getElementById('login-screen');
 
     if (!db) {
-        // Fallback local se o Firestore não estiver ativo
-        state.userName = user.displayName || 'Gloomi Lover';
-        state.userEmail = user.email;
-        state.userPhoto = user.photoURL;
-        loginScreen.style.opacity = '0';
-        setTimeout(() => {
-            loginScreen.style.display = 'none';
-            showMainApp();
-        }, 600);
+        showToast('⚠️ Banco de dados Firestore indisponível.', 'warning');
         return;
     }
 
@@ -185,78 +187,42 @@ async function loadFromFirestoreOrInit(user) {
         const userDocRef = db.collection('users').doc(user.uid);
         const docSnap = await userDocRef.get();
 
-        loginScreen.style.opacity = '0';
+        if (loginScreen) loginScreen.style.opacity = '0';
 
         setTimeout(() => {
-            loginScreen.style.display = 'none';
+            if (loginScreen) loginScreen.style.display = 'none';
 
-            if (docSnap.exists) {
+            if (docSnap.exists && docSnap.data().onboardingComplete) {
+                // Usuário já é cadastrado e já respondeu o questionário! Carrega tudo da nuvem
                 const cloudData = docSnap.data();
                 loadUserState(cloudData);
-                // Atualiza dados do Google caso tenham mudado
                 state.userName = state.userName || user.displayName || 'Gloomi Lover';
                 state.userEmail = user.email;
                 state.userPhoto = user.photoURL;
                 showMainApp();
-                setTimeout(() => showToast(`Dados sincronizados da nuvem! ☁️`, 'success'), 400);
+                setTimeout(() => {
+                    showToast(`Oii, ${state.userName}! Que bom ter você de volta 💕✨`, 'success');
+                    triggerConfetti();
+                }, 400);
             } else {
-                // Primeira vez: inicia onboarding com nome do Google pré-preenchido
-                tempUserData.name = user.displayName ? user.displayName.split(' ')[0] : 'Gloomi Lover';
+                // Primeira vez: precisa preencher o questionário de cadastro de pele!
+                tempUserData.name = user.displayName ? user.displayName.split(' ')[0] : '';
                 state.userEmail = user.email;
                 state.userPhoto = user.photoURL;
+                state.onboardingComplete = false;
                 showOnboardingScreen();
+                showToast(`Bem-vinda, ${tempUserData.name || 'linda'}! Vamos conhecer sua pele 🌸`, 'info');
             }
-        }, 600);
+        }, 500);
 
     } catch (err) {
-        console.warn('[Gloomi Firebase] Falha ao ler Firestore, usando sessão local:', err);
-        loginScreen.style.opacity = '0';
-        setTimeout(() => {
-            loginScreen.style.display = 'none';
-            state.userName = user.displayName || 'Gloomi Lover';
-            state.userEmail = user.email;
-            state.userPhoto = user.photoURL;
-            showMainApp();
-        }, 600);
+        console.error('[Gloomi Firebase] Erro ao carregar dados do usuário:', err);
+        showToast('Erro ao carregar dados da nuvem: ' + (err.message || 'Verifique sua conexão.'), 'warning');
     }
-}
-
-function doLogin() {
-    const loginName = document.getElementById('login-name').value.trim();
-    if (!loginName) {
-        showToast('Por favor, digite seu nome de usuário.', 'warning');
-        return;
-    }
-
-    currentUser = loginName.toLowerCase();
-    const storageKey = 'gloomi_user_' + currentUser;
-    const storedUser = localStorage.getItem(storageKey);
-
-    const loginScreen = document.getElementById('login-screen');
-    loginScreen.style.opacity = '0';
-
-    setTimeout(() => {
-        loginScreen.style.display = 'none';
-
-        if (storedUser) {
-            const saved = JSON.parse(storedUser);
-            loadUserState(saved);
-            showMainApp();
-            setTimeout(() => showToast(`Que bom te ver de volta, ${state.userName}! ✨`, 'success'), 500);
-        } else {
-            tempUserData.name = loginName;
-            showOnboardingScreen();
-        }
-    }, 700);
-}
-
-function handleLoginKey(e) {
-    if (e.key === 'Enter') doLogin();
 }
 
 function loadUserState(saved) {
     Object.assign(state, saved);
-    // Garantir estrutura nova para usuários antigos
     if (!state.products) state.products = [];
     if (!state.routineItems) state.routineItems = [];
     if (!state.checkedToday) state.checkedToday = {};
@@ -264,10 +230,10 @@ function loadUserState(saved) {
     if (!state.achievements) state.achievements = {};
     if (!state.xp) state.xp = 0;
     if (!state.level) state.level = 1;
-    if (!state.streak) state.streak = 0;
+    if (!state.streak) state.streak = 1;
+    if (!state.coins && state.coins !== 0) state.coins = 100;
     if (!state.lumi) state.lumi = { color: '#FFB3BA', isFemale: false, accessory: '', mood: 'happy' };
 
-    // Checar streak
     checkDailyStreak();
     updateAllUI();
 }
@@ -285,7 +251,8 @@ function checkDailyStreak() {
         state.streak = 1;
     }
     state.lastLoginDate = today;
-    state.checkedToday = {}; // Reset diário
+    state.checkedToday = {}; // Reset diário da rotina
+    state.waterDrunk = 0;   // Reset diário da água
     saveState();
 }
 
@@ -298,12 +265,19 @@ function getYesterdayString() {
     return d.toISOString().split('T')[0];
 }
 
-/* --- ONBOARDING --- */
+/* --- QUESTIONÁRIO DE CADASTRO (ONBOARDING) --- */
 function showOnboardingScreen() {
     const ob = document.getElementById('onboarding-screen');
+    if (!ob) return;
     ob.style.display = 'flex';
     setTimeout(() => { ob.style.opacity = '1'; }, 30);
     updateObProgress(1);
+
+    // Pré-preenche o nome do Google
+    const nameInput = document.getElementById('ob-name');
+    if (nameInput) {
+        nameInput.value = tempUserData.name || (firebaseUser && firebaseUser.displayName ? firebaseUser.displayName.split(' ')[0] : '');
+    }
 }
 
 function updateObProgress(step) {
@@ -316,12 +290,20 @@ function updateObProgress(step) {
 
 function goToOnboardingStep(step) {
     if (step === 2) {
-        if (!document.getElementById('ob-skin-type').value ||
-            !document.getElementById('ob-skin-condition').value ||
-            !document.getElementById('ob-age').value) {
-            showToast('Preencha todos os campos para continuar.', 'warning');
+        const nameVal = document.getElementById('ob-name')?.value.trim();
+        const typeVal = document.getElementById('ob-skin-type')?.value;
+        const condVal = document.getElementById('ob-skin-condition')?.value;
+        const ageVal = document.getElementById('ob-age')?.value;
+
+        if (!nameVal) {
+            showToast('Como prefere ser chamada? Digite seu nomezinho! 💕', 'warning');
             return;
         }
+        if (!typeVal || !condVal || !ageVal) {
+            showToast('Preencha seu tipo de pele e idade para prepararmos tudo pra você! 🌸', 'warning');
+            return;
+        }
+        tempUserData.name = nameVal;
     }
     document.querySelectorAll('[id^="ob-step-"]').forEach(el => {
         el.style.display = 'none';
@@ -331,7 +313,7 @@ function goToOnboardingStep(step) {
     if (next) {
         next.classList.remove('hidden');
         next.style.display = 'flex';
-        next.style.animation = 'fadeIn 0.4s ease-out';
+        next.style.animation = 'fade-up 0.4s ease-out';
     }
     updateObProgress(typeof step === 'number' ? step : 3);
 }
@@ -342,46 +324,54 @@ function setExperience(hasExperience) {
 }
 
 function finishOnboarding(action) {
-    const skinType = document.getElementById('ob-skin-type').value;
-    const skinCond = document.getElementById('ob-skin-condition').value;
-    const age = document.getElementById('ob-age').value;
+    const nameVal = document.getElementById('ob-name')?.value.trim() || tempUserData.name || (firebaseUser && firebaseUser.displayName) || 'Amor';
+    const skinType = document.getElementById('ob-skin-type')?.value || 'normal';
+    const skinCond = document.getElementById('ob-skin-condition')?.value || 'equilibrada';
+    const age = document.getElementById('ob-age')?.value || '22';
 
-    state.userName = tempUserData.name;
+    state.userName = nameVal;
+    state.userEmail = firebaseUser ? firebaseUser.email : (state.userEmail || '');
+    state.userPhoto = firebaseUser ? firebaseUser.photoURL : (state.userPhoto || '');
     state.skinType = skinType;
     state.skinCondition = skinCond;
     state.userAge = age;
+    state.onboardingComplete = true;
     state.streak = 1;
     state.lastLoginDate = getTodayString();
+    state.coins = 100; // Bônus caloroso de boas-vindas
+    state.xp = 50;
 
-    // Rotina básica para iniciantes
+    // Rotina básica inicial cheia de carinho
     if (action === 'start_basic') {
         const basicProducts = [
-            { id: genId(), name: 'Gel de Limpeza Suave', brand: 'Sugestão Gloomi', category: 'limpeza', notes: 'Use pela manhã e à noite.', inRoutine: true },
-            { id: genId(), name: 'Hidratante Facial Leve', brand: 'Sugestão Gloomi', category: 'hidratacao', notes: 'Aplique após lavar o rosto.', inRoutine: true },
-            { id: genId(), name: 'Protetor Solar FPS 50', brand: 'Sugestão Gloomi', category: 'protecao', notes: 'Essencial toda manhã.', inRoutine: true },
+            { id: genId(), name: 'Espuma ou Gel de Limpeza Suave 🫧', brand: 'Sugestão Gloomi', category: 'limpeza', notes: 'Lave com carinho pela manhã e à noite.', inRoutine: true },
+            { id: genId(), name: 'Hidratante Facial Reparador 🌸', brand: 'Sugestão Gloomi', category: 'hidratacao', notes: 'Aplique no rosto para manter a pele viçosa.', inRoutine: true },
+            { id: genId(), name: 'Protetor Solar FPS 50+ ☀️', brand: 'Sugestão Gloomi', category: 'protecao', notes: 'Seu escudo diário de proteção e glow!', inRoutine: true },
         ];
         state.products = basicProducts;
     } else if (action === 'add_product') {
-        const prodName = document.getElementById('ob-prod-name').value.trim();
+        const prodName = document.getElementById('ob-prod-name')?.value.trim();
         if (prodName) {
-            state.products = [{ id: genId(), name: prodName, brand: '', category: 'limpeza', notes: '', inRoutine: true }];
+            state.products = [{ id: genId(), name: prodName, brand: 'Meu Favorito', category: 'limpeza', notes: 'Meu queridinho de skincare.', inRoutine: true }];
         }
     }
 
+    // Salva no LocalStorage e no Firebase Firestore!
     saveState();
 
     const ob = document.getElementById('onboarding-screen');
-    ob.style.opacity = '0';
+    if (ob) ob.style.opacity = '0';
+
     setTimeout(() => {
-        ob.style.display = 'none';
+        if (ob) ob.style.display = 'none';
         updateAllUI();
         showMainApp();
-        addCoins(50);
-        setTimeout(() => showToast('Bem-vinda ao Gloomi! Ganhou +50 moedas 🎉', 'success'), 400);
+        triggerConfetti();
+        showToast(`Bem-vinda ao Gloomi, ${state.userName}! Ganhou +100 moedinhas de presente 🎁💖`, 'success');
         if (action === 'start_basic') {
-            setTimeout(() => showToast('Rotina básica criada pra você! Confira em Minha Rotina.', 'info'), 2000);
+            setTimeout(() => showToast('Preparamos sua rotina inicial com 3 passos essenciais! Confira em Minha Rotina 🌿', 'info'), 2200);
         }
-    }, 700);
+    }, 600);
 }
 
 /* ============ 4. MAIN APP ============ */
@@ -426,11 +416,13 @@ function updateUserName(name) {
     const wTitle = document.getElementById('welcome-title');
     const userInput = document.getElementById('user-name-input');
 
-    let dn = (name || 'Você').trim().split(' ')[0];
+    let dn = (name || 'Amor').trim().split(' ')[0];
     dn = dn.charAt(0).toUpperCase() + dn.slice(1);
 
-    if (hName) hName.textContent = 'Oi, ' + dn;
-    if (wTitle) wTitle.innerHTML = `Olá, <em>${dn}</em>! Seu Lumi<br>está pronto pra te cuidar. ✦`;
+    if (hName) hName.textContent = 'Oi, ' + dn + ' 💕';
+    if (wTitle) {
+        wTitle.innerHTML = `Oii, <span class="user-highlight">${dn}</span>! Seu Lumi tá pronto<br>pra cuidar de você hoje 💕`;
+    }
     if (userInput && !userInput.dataset.focused) userInput.value = name || dn;
 }
 
@@ -459,7 +451,10 @@ function addXP(amount) {
     if (state.xp >= xpForNextLevel) {
         state.xp -= xpForNextLevel;
         state.level++;
-        setTimeout(() => showToast(`🎊 Nível ${state.level} alcançado!`, 'success'), 600);
+        setTimeout(() => {
+            showToast(`🎊 UHUUL! Nível ${state.level} alcançado! Você brilha demais ✨💖`, 'success');
+            triggerConfetti();
+        }, 600);
     }
     updateXpUI();
     saveState();
@@ -495,6 +490,20 @@ function updateProgress() {
     const pctEl = document.getElementById('progress-percent');
     if (bar) bar.style.width = pct + '%';
     if (pctEl) pctEl.textContent = pct + '%';
+
+    // Banner de comemoração quando completa todos os passos
+    const celebBanner = document.getElementById('celebration-banner');
+    if (celebBanner) {
+        if (total > 0 && done === total) {
+            if (!celebBanner.classList.contains('show')) {
+                celebBanner.classList.add('show');
+                triggerConfetti();
+                showToast('✨ Uau, rotina 100% concluída! Pele viçosa e descansada 💖🌸', 'success');
+            }
+        } else {
+            celebBanner.classList.remove('show');
+        }
+    }
 
     // Lumi fica mais feliz conforme progresso
     updateLumiMood(pct);
@@ -781,13 +790,16 @@ function triggerLumiHappy() {
 }
 
 const LUMI_CUTE_QUOTES = [
-    "O Lumi te ama muito! 💕",
-    "Pele hidratada é pele feliz! 🌸",
-    "Você está radiante hoje! ✨",
-    "Não se esqueça do protetor solar, viu? ☀️",
-    "O Lumi mandou um abraço bem quentinho! 🥰",
-    "Cada cuidado hoje é amor próprio! 🌿",
-    "Beba água e arrase! 💧✨"
+    "O Lumi te ama tantooo! 💕",
+    "Que cheirinho bom de autocuidado e amor próprio! 🌸✨",
+    "Você está simplesmente radiante hoje! ✨💖",
+    "Lembrou do protetor solar, maravilhosa? ☀️🧴",
+    "O Lumi mandou um abraço bem fofinho e quentinho! 🥰",
+    "Cada gotinha que você passa é carinho na sua pele! 🌿",
+    "Já bebeu sua aguinha hoje, linda? 💧💕",
+    "Sua luz própria não precisa de nenhum filtro! 👑✨",
+    "O Lumi tá orgulhoso demais da sua dedicação hoje! 💖",
+    "Pele de pêssego e coração leve! 🍑🌸"
 ];
 
 function petLumi() {
@@ -795,6 +807,7 @@ function petLumi() {
     const randomQuote = LUMI_CUTE_QUOTES[Math.floor(Math.random() * LUMI_CUTE_QUOTES.length)];
     showToast(randomQuote, 'info');
     triggerConfetti();
+    addCoins(5, false); // Dar 5 moedinhas por mimar o Lumi!
 }
 
 /* --- Customizer Modal --- */

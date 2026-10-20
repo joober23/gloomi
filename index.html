@@ -82,11 +82,11 @@
     <!-- Lado direito — Form -->
     <div class="login-form-side">
         <div class="login-form-card">
-            <h2>Entrar</h2>
-            <p>Acesse com sua conta do Google para sincronizar tudo na nuvem, ou continue como convidada!</p>
+            <h2>Entrar ✦</h2>
+            <p>Acesse com sua conta do Google para sincronizar sua rotina, produtos e seu Lumi na nuvem!</p>
 
-            <!-- Botão de Login com Google -->
-            <button class="btn-google" id="btn-google-login" onclick="loginWithGoogle()">
+            <!-- Botão de Login com Google Exclusivo -->
+            <button class="btn-google" id="btn-google-login" onclick="loginWithGoogle()" style="margin-top: 18px; margin-bottom: 20px;">
                 <svg viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                     <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -96,23 +96,16 @@
                 <span>Entrar com o Google</span>
             </button>
 
-            <div class="login-divider">
-                <span>ou acesse pelo nome</span>
-            </div>
-
-            <div class="custom-input" style="margin-top:8px">
-                <input type="text" id="login-name" placeholder=" " autocomplete="off" onkeydown="handleLoginKey(event)">
-                <label>Seu nome de usuário</label>
-            </div>
-
-            <div style="display:flex;flex-direction:column;gap:12px;margin-top:20px">
-                <button class="btn-primary" style="padding:15px;font-size:15px;border-radius:14px" onclick="doLogin()">
-                    Continuar como Convidada ✦
-                </button>
-                <p style="font-size:12px;color:var(--text-3);text-align:center;line-height:1.5">
-                    <span id="firebase-status-hint">☁️ Conectado ao Firebase Cloud</span>
+            <div style="background: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.8); border-radius: var(--r-md); padding: 14px 16px; text-align: center;">
+                <p style="font-size:12px; color:var(--text-2); line-height:1.5; margin:0">
+                    ✨ <strong>Primeira vez por aqui?</strong><br>
+                    Faça login com o Google para responder ao questionário de pele e criar sua rotina personalizada!
                 </p>
             </div>
+
+            <p style="font-size:12px;color:var(--text-3);text-align:center;line-height:1.5;margin-top:18px">
+                <span id="firebase-status-hint">☁️ Conectado ao Firebase Cloud</span>
+            </p>
         </div>
     </div>
 </div>
@@ -132,6 +125,11 @@
 
         <!-- Passo 1: Perfil -->
         <div id="ob-step-1" style="display:flex;flex-direction:column;gap:18px">
+            <div class="custom-input">
+                <input type="text" id="ob-name" placeholder="Como quer ser chamada?" required>
+                <label>Seu Nome</label>
+            </div>
+
             <div class="custom-input">
                 <select id="ob-skin-type" required>
                     <option value="" disabled selected></option>
@@ -156,7 +154,7 @@
             </div>
 
             <div class="custom-input">
-                <input type="number" id="ob-age" placeholder="Ex: 24" min="10" max="100">
+                <input type="number" id="ob-age" placeholder="Ex: 24" min="10" max="100" required>
                 <label>Sua idade</label>
             </div>
 
@@ -295,9 +293,9 @@
             <!-- Welcome Banner -->
             <div class="welcome-banner">
                 <div class="welcome-text">
-                    <span class="badge">DASHBOARD</span>
-                    <h1 id="welcome-title">Olá! Seu Lumi está pronto<br>para cuidar da sua pele. ✦</h1>
-                    <p>Acompanhe sua rotina, ganhe moedas e veja o índice UV local para proteger sua pele hoje.</p>
+                    <span class="badge">✦ SEU MOMENTO DE AUTOCUIDADO</span>
+                    <h1 id="welcome-title">Oii, linda! Seu Lumi está pronto<br>pra cuidar de você hoje 💕</h1>
+                    <p>Respire fundo, coloque sua musiquinha favorita e curta cada gotinha da sua rotina. Você merece esse carinho todinho pra você!</p>
                 </div>
                 <div class="welcome-lumi-slot">
                     <div class="lumi-avatar lumi-normal lumi-float" style="background-color:#FFB3BA" id="dash-lumi-color" onclick="petLumi()" title="Clique para fazer um carinho no Lumi! 💕">
@@ -321,7 +319,7 @@
                     <div class="streak-icon">🔥</div>
                     <div class="streak-info">
                         <h3><span id="streak-count">1</span> dias</h3>
-                        <p>Sequência atual de skincare</p>
+                        <p>Dias seguidos de amor próprio e glow!</p>
                     </div>
                 </div>
                 <div class="xp-card">
@@ -340,31 +338,37 @@
                 <div class="uv-icon">☀️</div>
                 <div class="uv-info">
                     <h3>Índice UV: <span id="uv-value-text" style="color:var(--text-muted)">Carregando...</span></h3>
-                    <p id="uv-tip-text">Buscando dados climáticos...</p>
+                    <p id="uv-tip-text">Buscando clima pra proteger sua pele...</p>
                 </div>
+            </div>
+
+            <!-- Banner de Celebração de Rotina Concluída (Dinâmico) -->
+            <div class="celebration-banner" id="celebration-banner">
+                <h3>✨ VOCÊ BRILHOU HOJE, MARAVILHOSA! ✨</h3>
+                <p>Todos os passos da sua rotina foram concluídos. Sua pele agradece todo esse carinho e amor próprio! 💖🌸</p>
             </div>
 
             <!-- Rotina Diária -->
             <div class="routine-header">
                 <div>
-                    <div style="font-family:'Darumadrop One',cursive;font-size:12px;letter-spacing:3px;color:var(--jungle-green);text-transform:uppercase;margin-bottom:4px">HOJE</div>
-                    <div class="routine-title">Rotina da Manhã 🌅</div>
+                    <div style="font-family:'Darumadrop One',cursive;font-size:12px;letter-spacing:3px;color:var(--accent);text-transform:uppercase;margin-bottom:4px">MEU MOMENTO</div>
+                    <div class="routine-title">Rotina de Cuidados 🌅</div>
                 </div>
                 <button class="btn-primary" style="padding:10px 18px;font-size:13px" onclick="switchTab('products')">
-                    + Produto
+                    + Adicionar à Rotina
                 </button>
             </div>
 
             <div class="routine-card">
                 <div class="routine-card-header">
                     <div class="routine-card-header-left">
-                        <div class="routine-card-icon">🌅</div>
+                        <div class="routine-card-icon">🌸</div>
                         <div class="routine-card-info">
-                            <h3>Passos da Manhã</h3>
-                            <p>Recomendado ao acordar</p>
+                            <h3>Passos de Cuidado</h3>
+                            <p>Sua sequência favorita de skincare</p>
                         </div>
                     </div>
-                    <div class="time-badge">08:00 AM</div>
+                    <div class="time-badge">Ritual Diário</div>
                 </div>
                 <div style="display:flex;flex-direction:column;gap:12px" id="routine-list">
                     <!-- Renderizado pelo JS -->
@@ -373,8 +377,8 @@
 
             <!-- Widget Água -->
             <div class="water-widget">
-                <h3><i class="fa-solid fa-droplet"></i> Meta de Hidratação</h3>
-                <p>Beba água para ganhar moedas! (<span id="water-count">0</span>/6 copos hoje)</p>
+                <h3><i class="fa-solid fa-droplet"></i> Hidratação da Pele & Alma</h3>
+                <p>Cada golinho é viço e saúde pra você! (<span id="water-count">0</span>/6 copos hoje)</p>
                 <div class="water-glasses">
                     <button class="glass-btn" id="glass-1" onclick="drinkWater(1)" title="1 copo">💧</button>
                     <button class="glass-btn" id="glass-2" onclick="drinkWater(2)" title="2 copos">💧</button>
