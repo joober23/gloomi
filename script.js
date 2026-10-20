@@ -842,7 +842,7 @@ let spaTimerState = {
 function openSpaTimerModal() {
     const modal = document.getElementById('spa-timer-modal');
     if (modal) {
-        modal.classList.add('active');
+        openModal(modal);
         updateSpaTimerDisplay();
     }
 }
@@ -850,7 +850,7 @@ function openSpaTimerModal() {
 function closeSpaTimerModal() {
     const modal = document.getElementById('spa-timer-modal');
     if (modal) {
-        modal.classList.remove('active');
+        closeModal(modal);
     }
 }
 
