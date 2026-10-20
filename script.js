@@ -39,11 +39,20 @@ let currentUser = null;
 let firebaseUser = null;
 
 /* ============ 2. INICIALIZAÇÃO ============ */
-window.onload = () => {
-    animateSplash();
+let isAppInitialized = false;
+let splashDismissed = false;
+
+function initApp() {
+    if (isAppInitialized) return;
+    isAppInitialized = true;
+
     updateCoinsUI();
     initFirebaseIntegration();
-};
+    animateSplash();
+}
+
+document.addEventListener('DOMContentLoaded', initApp);
+window.addEventListener('load', initApp);
 
 function initFirebaseIntegration() {
     const hintEl = document.getElementById('firebase-status-hint');
@@ -70,20 +79,37 @@ function initFirebaseIntegration() {
 }
 
 function animateSplash() {
+    if (splashDismissed) return;
+
+    // Fecha a splash suavemente após 1.8s
     setTimeout(() => {
-        const splash = document.getElementById('splash-screen');
+        dismissSplash();
+    }, 1800);
+}
+
+function dismissSplash() {
+    if (splashDismissed) return;
+    splashDismissed = true;
+
+    const splash = document.getElementById('splash-screen');
+    if (splash) {
+        splash.style.transition = 'opacity 0.6s ease';
         splash.style.opacity = '0';
         setTimeout(() => {
             splash.style.display = 'none';
             showLoginScreen();
-        }, 800);
-    }, 2800);
+        }, 600);
+    } else {
+        showLoginScreen();
+    }
 }
 
 function showLoginScreen() {
     const loginScreen = document.getElementById('login-screen');
-    loginScreen.style.display = 'flex';
-    setTimeout(() => { loginScreen.style.opacity = '1'; }, 30);
+    if (loginScreen) {
+        loginScreen.style.display = 'flex';
+        setTimeout(() => { loginScreen.style.opacity = '1'; }, 30);
+    }
     fetchRealUV();
     renderCalendar();
 }
@@ -240,11 +266,6 @@ function loadUserState(saved) {
     if (!state.level) state.level = 1;
     if (!state.streak) state.streak = 0;
     if (!state.lumi) state.lumi = { color: '#FFB3BA', isFemale: false, accessory: '', mood: 'happy' };
-
-    // Checar streak
-    checkDailyStreak();
-    updateAllUI();
-}
 
     // Checar streak
     checkDailyStreak();
