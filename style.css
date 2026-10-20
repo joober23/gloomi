@@ -2392,3 +2392,589 @@ footer { display: none; text-align: center; padding: 28px; color: var(--text-3);
 .text-center { text-align: center; }
 #ob-step-1, #ob-step-2, #ob-step-3a, #ob-step-3b { flex-direction: column; gap: 14px; }
 #ob-step-1 { display: flex; }
+
+/* ============================================================
+   RESPONSIVIDADE COMPLETA PARA CELULAR & MOBILE FIRST TWEAKS
+   ============================================================ */
+
+/* Previne zoom acidental no iOS ao focar em inputs */
+@media (max-width: 768px) {
+    .custom-input input,
+    .custom-input select,
+    select,
+    input[type="text"],
+    input[type="number"] {
+        font-size: 16px !important;
+    }
+}
+
+@media (max-width: 767px) {
+    /* 1. Header ultra compacto e à prova de quebras */
+    #app-header {
+        height: 60px;
+        padding: 0 14px;
+    }
+    .header-logo {
+        font-size: 22px;
+        gap: 3px;
+    }
+    .header-logo .logo-dot {
+        font-size: 16px;
+    }
+    .header-right {
+        gap: 6px;
+    }
+    .spa-quick-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+        gap: 4px;
+        border-radius: var(--r-pill);
+    }
+    .spa-quick-btn .spa-quick-label {
+        display: none; /* Em telas de celular, mostra apenas o ícone ⏱️ para não estourar o topo! */
+    }
+    .coins-badge {
+        padding: 5px 10px;
+        font-size: 11.5px;
+        gap: 4px;
+    }
+    .header-avatar-btn {
+        padding: 3px 6px 3px 3px;
+        gap: 4px;
+    }
+    .header-avatar-btn span {
+        display: none; /* Esconde o texto no celular para não poluir o header */
+    }
+
+    /* 2. Layout Principal com Safe-Area para iPhone e Android */
+    main {
+        width: 92%;
+        margin: 0 auto;
+        padding: 18px 0 calc(95px + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* 3. Barra de navegação inferior flutuante adaptada para telas pequenas */
+    #mobile-nav {
+        display: flex;
+        bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+        left: 12px;
+        right: 12px;
+        padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px));
+        border-radius: 26px;
+    }
+    .nav-link-mob {
+        padding: 6px 8px;
+        gap: 2px;
+        flex: 1;
+    }
+    .nav-link-mob i {
+        font-size: 16px;
+    }
+    .nav-link-mob span {
+        font-size: 10px;
+        letter-spacing: -0.2px;
+    }
+
+    /* 4. Banner de Boas-Vindas */
+    .welcome-banner {
+        padding: 20px 16px;
+        border-radius: var(--r-md);
+        margin-bottom: 16px;
+    }
+    .welcome-banner .banner-dots {
+        display: none; /* Evita que os pontinhos fiquem sobre o texto no mobile */
+    }
+    .welcome-text h1 {
+        font-size: 21px;
+        line-height: 1.25;
+        margin-top: 6px;
+        margin-bottom: 6px;
+    }
+    .welcome-text p {
+        font-size: 12.5px;
+        line-height: 1.5;
+    }
+    .welcome-text .editorial-pill {
+        font-size: 9.5px;
+        padding: 4px 12px;
+        letter-spacing: 0.8px;
+    }
+
+    /* 5. Streak & XP Cards */
+    .streak-section {
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+    .streak-card, .xp-card {
+        padding: 14px 16px;
+        min-width: 0;
+        width: 100%;
+        border-radius: var(--r-md);
+    }
+    .streak-icon {
+        font-size: 28px;
+    }
+    .streak-info h3 {
+        font-size: 20px;
+    }
+    .streak-info p {
+        font-size: 11px;
+    }
+    .xp-card-header span {
+        font-size: 12px;
+    }
+
+    /* 6. Widget UV */
+    .uv-widget {
+        padding: 14px 16px;
+        gap: 12px;
+        margin-bottom: 14px;
+        border-radius: var(--r-md);
+    }
+    .uv-icon {
+        font-size: 2rem;
+    }
+    .uv-info h3 {
+        font-size: 14px;
+    }
+    .uv-info p {
+        font-size: 11.5px;
+    }
+
+    /* 7. Card de Humor da Pele (Skin Mood) */
+    .skin-mood-card {
+        padding: 16px 14px;
+        border-radius: var(--r-md);
+        margin-bottom: 16px;
+    }
+    .skin-mood-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+    .skin-mood-header h3 {
+        font-size: 19px;
+    }
+    .skin-mood-reward-tag {
+        font-size: 10px;
+        padding: 3px 10px;
+    }
+    .skin-mood-desc {
+        font-size: 12px;
+        margin-bottom: 12px;
+    }
+    .skin-mood-chips {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+    .skin-mood-chip:nth-child(5) {
+        grid-column: span 2; /* 5º item se estica harmoniosamente ocupando a largura total */
+    }
+    .skin-mood-chip {
+        padding: 10px 6px;
+        font-size: 11px;
+        border-radius: var(--r-sm);
+    }
+    .mood-icon {
+        font-size: 18px;
+    }
+    .skin-tip-card {
+        padding: 12px 14px;
+        margin-top: 12px;
+    }
+    .skin-tip-header h4 {
+        font-size: 13.5px;
+    }
+    .skin-tip-card p {
+        font-size: 12px;
+        line-height: 1.5;
+    }
+    .skin-tip-footer {
+        font-size: 11px;
+    }
+
+    /* 8. Guia de Ordem de Aplicação */
+    .guide-order-card {
+        padding: 12px 14px;
+        border-radius: var(--r-md);
+        margin-bottom: 16px;
+    }
+    .guide-order-title strong {
+        font-size: 12.5px;
+    }
+    .guide-order-title span {
+        font-size: 11px;
+    }
+    .guide-steps-grid {
+        gap: 6px;
+        padding-bottom: 6px;
+        -webkit-overflow-scrolling: touch;
+    }
+    .guide-step-item {
+        min-width: 95px;
+        padding: 8px 6px;
+    }
+    .guide-step-badge {
+        width: 22px;
+        height: 22px;
+        font-size: 10px;
+    }
+    .guide-step-info strong {
+        font-size: 11px;
+    }
+    .guide-step-info span {
+        font-size: 9px;
+    }
+    .guide-order-tip {
+        font-size: 11px;
+        padding: 8px 10px;
+    }
+
+    /* 9. Cabeçalho de Rotina & Seletor Manhã/Noite */
+    .routine-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+    .routine-title {
+        font-size: 24px;
+    }
+    .routine-subtitle {
+        font-size: 12px;
+    }
+    .routine-header-actions {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .ritual-switcher {
+        width: 100%;
+        display: flex;
+    }
+    .ritual-btn {
+        flex: 1;
+        justify-content: center;
+        padding: 8px 10px;
+        font-size: 12.5px;
+    }
+    .routine-header-actions .btn-primary {
+        width: 100%;
+        justify-content: center;
+        padding: 10px 14px;
+        font-size: 13px;
+    }
+
+    /* 10. Itens de Rotina */
+    .routine-card {
+        padding: 16px 14px;
+        border-radius: var(--r-md);
+        margin-bottom: 16px;
+    }
+    .routine-card-header {
+        padding-bottom: 12px;
+        margin-bottom: 14px;
+    }
+    .routine-card-icon {
+        width: 38px;
+        height: 38px;
+        font-size: 19px;
+    }
+    .routine-card-info h3 {
+        font-size: 18px;
+    }
+    .time-badge {
+        font-size: 10px;
+        padding: 4px 10px;
+    }
+    .routine-item {
+        padding: 12px 10px;
+        gap: 10px;
+        border-radius: var(--r-sm);
+    }
+    .routine-item-info {
+        min-width: 0;
+    }
+    .routine-item-info h4 {
+        font-size: 13.5px;
+        word-break: break-word;
+    }
+    .routine-item-info p {
+        font-size: 11px;
+    }
+    .step-number {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+    .check-circle {
+        width: 32px;
+        height: 32px;
+    }
+    .product-period-pill {
+        font-size: 9px;
+        padding: 2px 7px;
+    }
+
+    /* 11. Widget Água (6 copos em linha única sem quebra) */
+    .water-widget {
+        padding: 16px 14px;
+        border-radius: var(--r-md);
+        margin-bottom: 16px;
+    }
+    .water-widget h3 {
+        font-size: 20px;
+    }
+    .water-widget > p {
+        font-size: 11.5px;
+        margin-bottom: 14px;
+    }
+    .water-glasses {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 6px;
+        justify-content: center;
+    }
+    .glass-btn {
+        width: 100%;
+        max-width: 44px;
+        height: 50px;
+        font-size: 18px;
+        margin: 0 auto;
+        border-radius: 8px 8px 14px 14px;
+    }
+
+    /* 12. Progresso de Hoje */
+    .progress-card {
+        padding: 16px 14px;
+        border-radius: var(--r-md);
+    }
+    .progress-card-header h2 {
+        font-size: 19px;
+    }
+
+    /* 13. Modais Responsivos (Add Produto, Customizador, Spa) */
+    .modal-card {
+        width: 95%;
+        max-width: 400px;
+        padding: 22px 16px;
+        border-radius: var(--r-lg);
+        max-height: 86vh;
+    }
+    .modal-close {
+        top: 14px;
+        right: 14px;
+        width: 28px;
+        height: 28px;
+        font-size: 16px;
+    }
+    .modal-title {
+        font-size: 22px;
+    }
+    .modal-subtitle {
+        font-size: 11.5px;
+        margin-bottom: 16px;
+    }
+    .category-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        margin-bottom: 14px;
+    }
+    .category-chip {
+        padding: 8px 4px;
+    }
+    .category-chip .chip-icon {
+        font-size: 18px;
+    }
+    .category-chip .chip-label {
+        font-size: 10px;
+    }
+    .period-selector {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+    .period-chip {
+        padding: 8px 10px;
+        font-size: 11.5px;
+    }
+
+    /* Spa Modal Adaptado */
+    .spa-modal-card {
+        padding: 20px 14px;
+    }
+    .spa-modal-dots {
+        display: none;
+    }
+    .spa-presets {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        margin: 12px 0 14px 0;
+    }
+    .spa-preset-btn {
+        padding: 7px 4px;
+        border-radius: var(--r-sm);
+    }
+    .preset-icon { font-size: 16px; }
+    .preset-name { font-size: 9.5px; }
+    .preset-time { font-size: 9.5px; }
+    .spa-timer-container {
+        width: 160px;
+        height: 160px;
+        margin: 8px auto 12px auto;
+    }
+    .spa-timer-countdown {
+        font-size: 36px;
+    }
+    .spa-timer-label {
+        font-size: 10px;
+    }
+    .spa-breathing-cue {
+        font-size: 10.5px;
+        min-height: 22px;
+    }
+    .spa-controls {
+        flex-direction: column;
+        width: 100%;
+        gap: 8px;
+    }
+    .spa-btn-main {
+        width: 100%;
+        padding: 12px 18px;
+        font-size: 13px;
+    }
+    .spa-reward-note {
+        font-size: 10.5px;
+        margin-top: 6px;
+    }
+
+    /* 14. Tela de Login no Celular */
+    #login-screen {
+        flex-direction: column;
+        min-height: 100vh;
+        overflow-y: auto;
+    }
+    .login-hero {
+        flex: none;
+        padding: 30px 18px 20px;
+    }
+    .hero-dots-top, .hero-dots-bottom {
+        display: none;
+    }
+    .login-hero-lumi-wrapper {
+        margin-bottom: 12px;
+    }
+    .hero-lumi-bg {
+        width: 100px;
+        height: 100px;
+    }
+    .login-hero .lumi-large {
+        width: 75px;
+        height: 75px;
+    }
+    .login-hero h1 {
+        font-size: 26px;
+        margin-bottom: 6px;
+    }
+    .login-hero p {
+        font-size: 12px;
+        max-width: 270px;
+        line-height: 1.45;
+    }
+    .login-hero .feature-chips {
+        display: none;
+    }
+    .login-form-side {
+        flex: none;
+        padding: 16px 14px 40px;
+    }
+    .login-form-card {
+        padding: 22px 16px;
+        border-radius: var(--r-lg);
+    }
+    .login-form-card h2 {
+        font-size: 26px;
+    }
+    .login-form-card > p {
+        font-size: 12px;
+        margin-bottom: 16px;
+    }
+    .btn-google {
+        font-size: 14px;
+        padding: 13px 16px;
+        width: 100%;
+    }
+
+    /* 15. Tela de Onboarding no Celular */
+    #onboarding-screen {
+        padding: 14px;
+    }
+    .onboarding-card {
+        padding: 22px 16px;
+        border-radius: var(--r-lg);
+    }
+    .onboarding-card h3 {
+        font-size: 22px;
+        margin-bottom: 16px;
+    }
+    .option-card {
+        padding: 12px 14px;
+        gap: 10px;
+    }
+    .option-card .option-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+    }
+    .option-card .option-text strong {
+        font-size: 13px;
+    }
+    .option-card .option-text span {
+        font-size: 11px;
+    }
+
+    /* 16. Outras Abas (Produtos, Diário, Loja, Perfil) */
+    .page-header h2 {
+        font-size: 24px;
+    }
+    .products-grid {
+        gap: 12px;
+    }
+    .product-card {
+        padding: 16px 14px;
+    }
+    .calendar-card, .photos-card {
+        padding: 16px 14px;
+        border-radius: var(--r-md);
+    }
+    .calendar-nav h3 {
+        font-size: 17px;
+    }
+    .calendar-day {
+        font-size: 11px;
+        border-radius: 6px;
+    }
+    .photo-upload-grid {
+        gap: 8px;
+    }
+    .photo-upload-box i {
+        font-size: 20px;
+    }
+    .photo-upload-box span {
+        font-size: 9.5px;
+    }
+    .shop-grid {
+        gap: 12px;
+    }
+    .shop-card {
+        padding: 16px 14px;
+    }
+    .profile-grid {
+        gap: 14px;
+    }
+    .profile-card {
+        padding: 16px 14px;
+    }
+}
