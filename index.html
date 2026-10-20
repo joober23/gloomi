@@ -21,6 +21,16 @@
 ================================= -->
 <div id="splash-screen" onclick="dismissSplash()" title="Clique para entrar" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity 0.6s ease;cursor:pointer">
     <div class="splash-ring"></div>
+    <div class="dot-matrix splash-dots-tl">
+        <span></span><span></span><span></span>
+        <span></span><span></span><span></span>
+        <span></span><span></span><span></span>
+    </div>
+    <div class="dot-matrix splash-dots-br">
+        <span></span><span></span><span></span>
+        <span></span><span></span><span></span>
+        <span></span><span></span><span></span>
+    </div>
     <div class="splash-content">
         <div class="splash-sparkle splash-sparkle--tl">✦</div>
         <div class="splash-sparkle splash-sparkle--tr">✦</div>
@@ -40,13 +50,25 @@
      LOGIN SCREEN
 ================================= -->
 <div id="login-screen" style="display:none">
-    <!-- Lado esquerdo — Hero -->
+    <!-- Lado esquerdo — Hero Editorial -->
     <div class="login-hero">
-        <!-- Blobs decorativos animados -->
+        <!-- Blobs e Elementos Gráficos Decorativos -->
         <div class="hero-blob hero-blob--1"></div>
         <div class="hero-blob hero-blob--2"></div>
         <div class="hero-blob hero-blob--3"></div>
         <div class="hero-blob hero-blob--4"></div>
+        
+        <div class="dot-matrix hero-dots-top">
+            <span></span><span></span><span></span>
+            <span></span><span></span><span></span>
+            <span></span><span></span><span></span>
+        </div>
+        <div class="dot-matrix hero-dots-bottom">
+            <span></span><span></span><span></span>
+            <span></span><span></span><span></span>
+            <span></span><span></span><span></span>
+        </div>
+
         <div class="hero-sparkle hero-sparkle--a">✦</div>
         <div class="hero-sparkle hero-sparkle--b">✦</div>
         <div class="hero-sparkle hero-sparkle--c">✦</div>
@@ -68,13 +90,17 @@
                 </div>
             </div>
         </div>
+
+        <div class="editorial-pill" style="margin-bottom:12px;background:#4A1B24;color:#FF7570">
+            <span class="pill-dot"></span> AUTOCUIDADO INTELIGENTE
+        </div>
         <h1>Bem-vinda ao<br>Gloomi ✦</h1>
-        <p>Seu assistente pessoal e gamificado para cuidar da sua pele todos os dias.</p>
+        <p>Seu assistente pessoal e gamificado para cuidar da sua pele todos os dias com carinho e ciência.</p>
         <div class="feature-chips">
-            <span class="feature-chip">✦ Rotina Diária</span>
-            <span class="feature-chip">🎮 Gamificação</span>
+            <span class="feature-chip">✦ Rituais Manhã & Noite</span>
+            <span class="feature-chip">🌸 Skin Mood Diário</span>
+            <span class="feature-chip">⏱️ Mini-Spa Facial</span>
             <span class="feature-chip">🌡️ Índice UV</span>
-            <span class="feature-chip">📸 Diário de Fotos</span>
             <span class="feature-chip">🪞 Avatar Lumi</span>
         </div>
     </div>
@@ -241,6 +267,11 @@
         </nav>
 
         <div class="header-right">
+            <!-- Botão Spa Rápido -->
+            <button class="spa-quick-btn" onclick="openSpaTimerModal()" title="Iniciar Momento Spa Facial">
+                <span class="spa-quick-icon">⏱️</span>
+                <span class="spa-quick-label">Mini-Spa</span>
+            </button>
             <div class="coins-badge">
                 <i class="fa-solid fa-coins"></i>
                 <span class="coin-count">0</span>
@@ -290,10 +321,17 @@
         <!-- ===== TAB: ROTINA ===== -->
         <div id="tab-routine" class="tab-content active">
 
-            <!-- Welcome Banner -->
+            <!-- Welcome Banner Editorial -->
             <div class="welcome-banner">
+                <div class="dot-matrix banner-dots">
+                    <span></span><span></span><span></span>
+                    <span></span><span></span><span></span>
+                    <span></span><span></span><span></span>
+                </div>
                 <div class="welcome-text">
-                    <span class="badge">✦ SEU MOMENTO DE AUTOCUIDADO</span>
+                    <div class="editorial-pill">
+                        <span class="pill-dot"></span> SEU MOMENTO DE AUTOCUIDADO
+                    </div>
                     <h1 id="welcome-title">Oii, linda! Seu Lumi está pronto<br>pra cuidar de você hoje 💕</h1>
                     <p>Respire fundo, coloque sua musiquinha favorita e curta cada gotinha da sua rotina. Você merece esse carinho todinho pra você!</p>
                 </div>
@@ -325,7 +363,7 @@
                 <div class="xp-card">
                     <div class="xp-card-header">
                         <span id="level-label">Nível 1</span>
-                        <span id="xp-label" style="font-size:12px;color:var(--text-muted)">0 / 200 XP</span>
+                        <span id="xp-label" style="font-size:12px;color:var(--text-3)">0 / 200 XP</span>
                     </div>
                     <div class="xp-bar-wrap">
                         <div class="xp-bar" id="xp-bar" style="width:0%"></div>
@@ -337,26 +375,147 @@
             <div class="uv-widget">
                 <div class="uv-icon">☀️</div>
                 <div class="uv-info">
-                    <h3>Índice UV: <span id="uv-value-text" style="color:var(--text-muted)">Carregando...</span></h3>
+                    <h3>Índice UV: <span id="uv-value-text" style="color:var(--text-2)">Carregando...</span></h3>
                     <p id="uv-tip-text">Buscando clima pra proteger sua pele...</p>
+                </div>
+            </div>
+
+            <!-- Check-in de Sensação & Humor da Pele -->
+            <div class="skin-mood-card">
+                <div class="skin-mood-header">
+                    <div class="skin-mood-title-wrap">
+                        <div class="radial-badge-icon">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            <div class="radiant-ticks"><span></span><span></span><span></span></div>
+                        </div>
+                        <div>
+                            <div class="section-label-coral">CHECK-IN DIÁRIO</div>
+                            <h3>Como sua pele acordou hoje? 🌸</h3>
+                        </div>
+                    </div>
+                    <span class="skin-mood-reward-tag">+10 Moedas & +15 XP</span>
+                </div>
+                <p class="skin-mood-desc">Toque na sensação de hoje para receber orientações sob medida para a sua pele:</p>
+                <div class="skin-mood-chips">
+                    <button type="button" class="skin-mood-chip" data-mood="radiant" onclick="selectSkinMood('radiant')">
+                        <span class="mood-icon">✨</span>
+                        <span class="mood-label">Radiante</span>
+                    </button>
+                    <button type="button" class="skin-mood-chip" data-mood="oily" onclick="selectSkinMood('oily')">
+                        <span class="mood-icon">💧</span>
+                        <span class="mood-label">Oleosa</span>
+                    </button>
+                    <button type="button" class="skin-mood-chip" data-mood="dry" onclick="selectSkinMood('dry')">
+                        <span class="mood-icon">🏜️</span>
+                        <span class="mood-label">Ressecada</span>
+                    </button>
+                    <button type="button" class="skin-mood-chip" data-mood="sensitive" onclick="selectSkinMood('sensitive')">
+                        <span class="mood-icon">🌸</span>
+                        <span class="mood-label">Sensível</span>
+                    </button>
+                    <button type="button" class="skin-mood-chip" data-mood="acne" onclick="selectSkinMood('acne')">
+                        <span class="mood-icon">⚡</span>
+                        <span class="mood-label">Com Acne</span>
+                    </button>
+                </div>
+                <div id="skin-mood-advice" class="skin-mood-advice" style="display:none"></div>
+            </div>
+
+            <!-- Guia Visual: Ordem de Aplicação dos Produtos -->
+            <div class="guide-order-card">
+                <div class="guide-order-header" onclick="toggleOrderGuide()">
+                    <div class="guide-order-title">
+                        <span class="guide-icon">📖</span>
+                        <div>
+                            <strong>Regra de Ouro: Ordem de Aplicação</strong>
+                            <span>Do produto mais leve e aquoso ao mais denso e oclusivo</span>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-down guide-toggle-arrow" id="guide-arrow"></i>
+                </div>
+                <div class="guide-order-content" id="guide-order-content" style="display:none">
+                    <div class="guide-steps-grid">
+                        <div class="guide-step-item">
+                            <div class="guide-step-badge">1</div>
+                            <div class="guide-step-info">
+                                <strong>Limpeza</strong>
+                                <span>Sabonete ou Óleo facial</span>
+                            </div>
+                        </div>
+                        <div class="guide-step-arrow">➔</div>
+                        <div class="guide-step-item">
+                            <div class="guide-step-badge">2</div>
+                            <div class="guide-step-info">
+                                <strong>Tônico / Bruma</strong>
+                                <span>Equilíbrio do pH</span>
+                            </div>
+                        </div>
+                        <div class="guide-step-arrow">➔</div>
+                        <div class="guide-step-item">
+                            <div class="guide-step-badge">3</div>
+                            <div class="guide-step-info">
+                                <strong>Sérum Ativo</strong>
+                                <span>Vit C, Ácido ou Niacinamida</span>
+                            </div>
+                        </div>
+                        <div class="guide-step-arrow">➔</div>
+                        <div class="guide-step-item">
+                            <div class="guide-step-badge">4</div>
+                            <div class="guide-step-info">
+                                <strong>Área dos Olhos</strong>
+                                <span>Hidratação suave</span>
+                            </div>
+                        </div>
+                        <div class="guide-step-arrow">➔</div>
+                        <div class="guide-step-item">
+                            <div class="guide-step-badge">5</div>
+                            <div class="guide-step-info">
+                                <strong>Hidratante</strong>
+                                <span>Nutrição & Barreira</span>
+                            </div>
+                        </div>
+                        <div class="guide-step-arrow">➔</div>
+                        <div class="guide-step-item">
+                            <div class="guide-step-badge highlight">6</div>
+                            <div class="guide-step-info">
+                                <strong>Proteção / Óleo</strong>
+                                <span>FPS (dia) ou Óleo (noite)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="guide-order-tip">💡 <em>Por que essa ordem?</em> Texturas mais líquidas penetram profundamente nas camadas da pele; fórmulas mais espessas selam a hidratação e impedem a evaporação ao longo do dia ou da noite!</p>
                 </div>
             </div>
 
             <!-- Banner de Celebração de Rotina Concluída (Dinâmico) -->
             <div class="celebration-banner" id="celebration-banner">
                 <h3>✨ VOCÊ BRILHOU HOJE, MARAVILHOSA! ✨</h3>
-                <p>Todos os passos da sua rotina foram concluídos. Sua pele agradece todo esse carinho e amor próprio! 💖🌸</p>
+                <p>Todos os passos deste momento foram concluídos. Sua pele agradece todo esse carinho e amor próprio! 💖🌸</p>
             </div>
 
-            <!-- Rotina Diária -->
+            <!-- Rotina Diária com Seletor Manhã / Noite -->
             <div class="routine-header">
-                <div>
-                    <div style="font-family:'Darumadrop One',cursive;font-size:12px;letter-spacing:3px;color:var(--accent);text-transform:uppercase;margin-bottom:4px">MEU MOMENTO</div>
-                    <div class="routine-title">Rotina de Cuidados 🌅</div>
+                <div class="routine-header-left">
+                    <div class="editorial-pill">
+                        <span class="pill-dot"></span> MEU MOMENTO
+                    </div>
+                    <div class="routine-title" id="routine-dynamic-title">Ritual de Cuidados ☀️</div>
+                    <p class="routine-subtitle" id="routine-dynamic-subtitle">Desperte, limpe e proteja sua pele com FPS para o dia todo!</p>
                 </div>
-                <button class="btn-primary" style="padding:10px 18px;font-size:13px" onclick="switchTab('products')">
-                    + Adicionar à Rotina
-                </button>
+
+                <div class="routine-header-actions">
+                    <div class="ritual-switcher">
+                        <button type="button" class="ritual-btn active" id="btn-ritual-morning" onclick="setRitual('morning')">
+                            <i class="fa-solid fa-sun"></i> Manhã
+                        </button>
+                        <button type="button" class="ritual-btn" id="btn-ritual-night" onclick="setRitual('night')">
+                            <i class="fa-solid fa-moon"></i> Noite
+                        </button>
+                    </div>
+                    <button class="btn-primary" style="padding:10px 18px;font-size:13px" onclick="switchTab('products')">
+                        + Produtos
+                    </button>
+                </div>
             </div>
 
             <div class="routine-card">
@@ -368,7 +527,7 @@
                             <p>Sua sequência favorita de skincare</p>
                         </div>
                     </div>
-                    <div class="time-badge">Ritual Diário</div>
+                    <div class="time-badge">Ritual Selecionado</div>
                 </div>
                 <div style="display:flex;flex-direction:column;gap:12px" id="routine-list">
                     <!-- Renderizado pelo JS -->
@@ -669,8 +828,8 @@
         <div class="modal-subtitle">Adicione um produto à sua coleção</div>
 
         <!-- Categoria -->
-        <div style="margin-bottom:20px">
-            <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px">Categoria</div>
+        <div style="margin-bottom:16px">
+            <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px">Categoria</div>
             <div class="category-grid">
                 <button class="category-chip selected" data-cat="limpeza" onclick="selectCategory('limpeza', this)">
                     <span class="chip-icon">🫧</span>
@@ -695,6 +854,22 @@
                 <button class="category-chip" data-cat="esfoliante" onclick="selectCategory('esfoliante', this)">
                     <span class="chip-icon">🔮</span>
                     <span class="chip-label">Esfoliante</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Período do Ritual -->
+        <div style="margin-bottom:16px">
+            <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px">Em qual ritual usar?</div>
+            <div class="period-selector">
+                <button type="button" class="period-chip selected" data-period="both" onclick="selectPeriod('both', this)">
+                    <span>✨ Ambos (Dia & Noite)</span>
+                </button>
+                <button type="button" class="period-chip" data-period="morning" onclick="selectPeriod('morning', this)">
+                    <span>☀️ Apenas Manhã</span>
+                </button>
+                <button type="button" class="period-chip" data-period="night" onclick="selectPeriod('night', this)">
+                    <span>🌙 Apenas Noite</span>
                 </button>
             </div>
         </div>
@@ -801,6 +976,68 @@
         <button class="btn-primary" style="width:100%;padding:16px;font-size:15px;margin-top:24px" onclick="saveCustomization()">
             Salvar e Aplicar ✦
         </button>
+    </div>
+</div>
+
+<!-- ================================
+     MODAL: MINI-SPA FACIAL & TIMER
+================================= -->
+<div id="spa-timer-modal" class="modal-overlay" onclick="if(event.target===this) closeSpaTimerModal()">
+    <div class="modal-card spa-modal-card">
+        <button class="modal-close" onclick="closeSpaTimerModal()">×</button>
+        <div class="dot-matrix spa-modal-dots">
+            <span></span><span></span><span></span>
+            <span></span><span></span><span></span>
+            <span></span><span></span><span></span>
+        </div>
+        <div class="editorial-pill" style="margin-bottom:10px">
+            <span class="pill-dot"></span> MOMENTO RELAX
+        </div>
+        <div class="modal-title">Mini-Spa Facial ⏱️</div>
+        <div class="modal-subtitle">Reserve alguns minutos para respirar e cuidar de você</div>
+
+        <!-- Presets -->
+        <div class="spa-presets">
+            <button type="button" class="spa-preset-btn active" id="spa-preset-15" onclick="setSpaPreset(15, 'Máscara Facial 🧖‍♀️')">
+                <span class="preset-icon">🧖‍♀️</span>
+                <span class="preset-name">Máscara Facial</span>
+                <span class="preset-time">15 min</span>
+            </button>
+            <button type="button" class="spa-preset-btn" id="spa-preset-5" onclick="setSpaPreset(5, 'Massagem / Gua Sha 🧊')">
+                <span class="preset-icon">🧊</span>
+                <span class="preset-name">Gua Sha / Drenagem</span>
+                <span class="preset-time">5 min</span>
+            </button>
+            <button type="button" class="spa-preset-btn" id="spa-preset-10" onclick="setSpaPreset(10, 'Compressa Calmante 🌿')">
+                <span class="preset-icon">🌿</span>
+                <span class="preset-name">Compressa Calmante</span>
+                <span class="preset-time">10 min</span>
+            </button>
+        </div>
+
+        <!-- Circular Timer Display -->
+        <div class="spa-timer-container">
+            <svg class="spa-timer-svg" viewBox="0 0 200 200">
+                <circle class="spa-timer-bg-circle" cx="100" cy="100" r="88" />
+                <circle class="spa-timer-progress-circle" id="spa-timer-circle" cx="100" cy="100" r="88" />
+            </svg>
+            <div class="spa-timer-inner">
+                <div class="spa-timer-label" id="spa-timer-label">Máscara Facial 🧖‍♀️</div>
+                <div class="spa-timer-countdown" id="spa-timer-countdown">15:00</div>
+                <div class="spa-breathing-cue" id="spa-breathing-cue">Inspire tranquilamente...</div>
+            </div>
+        </div>
+
+        <!-- Controles -->
+        <div class="spa-controls">
+            <button type="button" class="btn-primary spa-btn-main" id="spa-play-btn" onclick="toggleSpaTimer()">
+                <i class="fa-solid fa-play"></i> Iniciar Momento
+            </button>
+            <button type="button" class="btn-ghost" onclick="resetSpaTimer()">
+                <i class="fa-solid fa-arrow-rotate-left"></i> Reiniciar
+            </button>
+        </div>
+        <p class="spa-reward-note">✨ Complete sua sessão para ganhar +20 Gloomi Coins & +30 XP!</p>
     </div>
 </div>
 

@@ -38,9 +38,10 @@ let tempUserData = {};
 let currentUser = null;
 let firebaseUser = null;
 
-/* ============ 2. INICIALIZAÇÃO ============ */
+/* ============ 2. INICIALIZAÇÃO & PERSISTÊNCIA ============ */
 let isAppInitialized = false;
 let splashDismissed = false;
+let isAuthResolutionDone = false;
 
 function initApp() {
     if (isAppInitialized) return;
@@ -48,7 +49,44 @@ function initApp() {
 
     updateCoinsUI();
     initFirebaseIntegration();
-    animateSplash();
+
+    // Verifica se o usuário já estava previamente autenticado
+    const wasLoggedIn = localStorage.getItem('gloomi_logged_in') === 'true';
+    const lastUid = localStorage.getItem('gloomi_last_uid');
+
+    if (wasLoggedIn && lastUid) {
+        // Pré-carrega os dados do cache local imediatamente para a UI ficar instantânea
+        const cached = localStorage.getItem('gloomi_user_' + lastUid);
+        if (cached) {
+            try {
+                const parsed = JSON.parse(cached);
+                loadUserState(parsed);
+                currentUser = lastUid;
+            } catch (e) {
+                console.warn('[Gloomi] Erro ao carregar cache local:', e);
+            }
+        }
+
+        // Mensagem aconchegante na splash
+        const tagline = document.querySelector('.splash-tagline');
+        if (tagline) tagline.textContent = 'Carregando seus rituais... ✦';
+
+        // Timeout de segurança: se o Firebase demorar mais de 3.5s (ex: sem internet), entra direto no app
+        setTimeout(() => {
+            if (!isAuthResolutionDone) {
+                if (currentUser && state.onboardingComplete) {
+                    dismissSplashDirectlyToApp();
+                } else {
+                    dismissSplash();
+                }
+            }
+        }, 3500);
+    } else {
+        // Primeira visita ou deslogado: splash normal seguida de login
+        setTimeout(() => {
+            dismissSplash();
+        }, 1600);
+    }
 }
 
 document.addEventListener('DOMContentLoaded', initApp);
@@ -69,57 +107,87 @@ function initFirebaseIntegration() {
     // Se o Firebase estiver configurado, escuta mudanças de autenticação
     if (isConfigured && window.gloomiFirebase.auth) {
         window.gloomiFirebase.auth.onAuthStateChanged(user => {
+            isAuthResolutionDone = true;
             if (user) {
                 firebaseUser = user;
                 currentUser = user.uid;
+                localStorage.setItem('gloomi_logged_in', 'true');
+                localStorage.setItem('gloomi_last_uid', user.uid);
                 console.log('[Gloomi Firebase] Sessão ativa detectada:', user.displayName || user.email);
-                
-                // Se o app principal ou onboarding ainda não foram abertos, sincroniza com Firestore
-                const mainApp = document.getElementById('main-app');
-                const obScreen = document.getElementById('onboarding-screen');
-                const isMainAppVisible = mainApp && mainApp.style.display === 'block';
-                const isObVisible = obScreen && obScreen.style.display === 'flex';
 
-                if (!isMainAppVisible && !isObVisible) {
-                    loadFromFirestoreOrInit(user);
-                }
+                hideLoginScreenImmediately();
+                loadFromFirestoreOrInit(user);
             } else {
                 firebaseUser = null;
                 currentUser = null;
+                localStorage.removeItem('gloomi_logged_in');
+                localStorage.removeItem('gloomi_last_uid');
+                dismissSplash();
             }
         });
     }
 }
 
-function animateSplash() {
-    if (splashDismissed) return;
-
-    // Fecha a splash suavemente após 1.8s
-    setTimeout(() => {
-        dismissSplash();
-    }, 1800);
-}
-
 function dismissSplash() {
     if (splashDismissed) return;
-    splashDismissed = true;
 
+    // Se o usuário já está logado ou no app, NUNCA exibe a tela de login
+    const wasLoggedIn = localStorage.getItem('gloomi_logged_in') === 'true';
+    const mainApp = document.getElementById('main-app');
+    const isMainOpen = mainApp && mainApp.style.display === 'block';
+
+    if (isMainOpen || (wasLoggedIn && state.onboardingComplete)) {
+        dismissSplashDirectlyToApp();
+        return;
+    }
+
+    splashDismissed = true;
     const splash = document.getElementById('splash-screen');
     if (splash) {
-        splash.style.transition = 'opacity 0.6s ease';
+        splash.style.transition = 'opacity 0.5s ease';
         splash.style.opacity = '0';
         setTimeout(() => {
             splash.style.display = 'none';
             showLoginScreen();
-        }, 600);
+        }, 500);
     } else {
         showLoginScreen();
     }
 }
 
-function showLoginScreen() {
+function dismissSplashDirectlyToApp() {
+    splashDismissed = true;
+    hideLoginScreenImmediately();
+    const splash = document.getElementById('splash-screen');
+    if (splash) {
+        splash.style.transition = 'opacity 0.4s ease';
+        splash.style.opacity = '0';
+        setTimeout(() => {
+            splash.style.display = 'none';
+            showMainApp();
+        }, 400);
+    } else {
+        showMainApp();
+    }
+}
+
+function hideLoginScreenImmediately() {
     const loginScreen = document.getElementById('login-screen');
     if (loginScreen) {
+        loginScreen.style.opacity = '0';
+        loginScreen.style.display = 'none';
+        loginScreen.style.pointerEvents = 'none';
+    }
+}
+
+function showLoginScreen() {
+    // Só exibe o login se o app principal NÃO estiver aberto
+    const mainApp = document.getElementById('main-app');
+    if (mainApp && mainApp.style.display === 'block') return;
+
+    const loginScreen = document.getElementById('login-screen');
+    if (loginScreen) {
+        loginScreen.style.pointerEvents = 'all';
         loginScreen.style.display = 'flex';
         setTimeout(() => { loginScreen.style.opacity = '1'; }, 30);
     }
@@ -151,8 +219,10 @@ async function loginWithGoogle() {
         const user = result.user;
         firebaseUser = user;
         currentUser = user.uid;
+        localStorage.setItem('gloomi_logged_in', 'true');
+        localStorage.setItem('gloomi_last_uid', user.uid);
 
-        // Verifica no Firestore se o usuário já tem cadastro concluído ou se precisa preencher o questionário
+        hideLoginScreenImmediately();
         await loadFromFirestoreOrInit(user);
 
     } catch (err) {
@@ -176,72 +246,73 @@ async function loginWithGoogle() {
 
 async function loadFromFirestoreOrInit(user) {
     const db = window.gloomiFirebase.db;
-    const loginScreen = document.getElementById('login-screen');
+    hideLoginScreenImmediately();
 
-    if (!db) {
-        showToast('⚠️ Banco de dados Firestore indisponível.', 'warning');
-        return;
+    const splash = document.getElementById('splash-screen');
+    if (splash) {
+        splash.style.display = 'none';
+        splashDismissed = true;
     }
 
     try {
-        const userDocRef = db.collection('users').doc(user.uid);
-        const docSnap = await userDocRef.get();
-
-        if (loginScreen) loginScreen.style.opacity = '0';
-
-        setTimeout(() => {
-            if (loginScreen) loginScreen.style.display = 'none';
-
-            if (docSnap.exists && docSnap.data().onboardingComplete) {
-                // Usuário já é cadastrado e já respondeu o questionário! Carrega tudo da nuvem
-                const cloudData = docSnap.data();
-                loadUserState(cloudData);
-                state.userName = state.userName || user.displayName || 'Gloomi Lover';
-                state.userEmail = user.email;
-                state.userPhoto = user.photoURL;
-                showMainApp();
-                setTimeout(() => {
-                    showToast(`Oii, ${state.userName}! Que bom ter você de volta 💕✨`, 'success');
-                    triggerConfetti();
-                }, 400);
-            } else {
-                // Primeira vez: precisa preencher o questionário de cadastro de pele!
-                tempUserData.name = user.displayName ? user.displayName.split(' ')[0] : '';
-                state.userEmail = user.email;
-                state.userPhoto = user.photoURL;
-                state.onboardingComplete = false;
-                showOnboardingScreen();
-                showToast(`Bem-vinda, ${tempUserData.name || 'linda'}! Vamos conhecer sua pele 🌸`, 'info');
+        let cloudData = null;
+        if (db) {
+            const userDocRef = db.collection('users').doc(user.uid);
+            const docSnap = await userDocRef.get();
+            if (docSnap.exists) {
+                cloudData = docSnap.data();
             }
-        }, 500);
+        }
+
+        if (cloudData && cloudData.onboardingComplete) {
+            // Usuário já é cadastrado: entra direto!
+            loadUserState(cloudData);
+            state.userName = state.userName || user.displayName || 'Gloomi Lover';
+            state.userEmail = user.email;
+            state.userPhoto = user.photoURL;
+            showMainApp();
+            setTimeout(() => {
+                showToast(`Oii, ${state.userName}! Que bom ter você de volta 💕✨`, 'success');
+                triggerConfetti();
+            }, 300);
+        } else {
+            // Verifica se há dados no cache local
+            const cachedUser = localStorage.getItem('gloomi_user_' + user.uid);
+            if (cachedUser) {
+                const parsed = JSON.parse(cachedUser);
+                if (parsed.onboardingComplete) {
+                    loadUserState(parsed);
+                    showMainApp();
+                    showToast(`Oii, ${state.userName || 'linda'}! Seus dados foram carregados 💕`, 'success');
+                    return;
+                }
+            }
+
+            // Primeira vez: questionário de boas-vindas
+            tempUserData.name = user.displayName ? user.displayName.split(' ')[0] : '';
+            state.userEmail = user.email;
+            state.userPhoto = user.photoURL;
+            state.onboardingComplete = false;
+            showOnboardingScreen();
+            showToast(`Bem-vinda, ${tempUserData.name || 'linda'}! Vamos conhecer sua pele 🌸`, 'info');
+        }
 
     } catch (err) {
         console.warn('[Gloomi Firebase] Aviso ao carregar dados do usuário no Firestore:', err);
 
-        // Se o Firestore estiver com regras fechadas (permission-denied), não bloqueia a entrada da usuária!
-        if (err.code === 'permission-denied' || (err.message && err.message.toLowerCase().includes('permission'))) {
-            showToast('⚠️ O login com Google funcionou! Para salvar na nuvem, lembre-se de liberar as Regras no Console do Firebase.', 'warning');
-
-            if (loginScreen) loginScreen.style.opacity = '0';
-            setTimeout(() => {
-                if (loginScreen) loginScreen.style.display = 'none';
-
-                const cachedUser = localStorage.getItem('gloomi_user_' + user.uid);
-                if (cachedUser) {
-                    loadUserState(JSON.parse(cachedUser));
-                    showMainApp();
-                } else {
-                    tempUserData.name = user.displayName ? user.displayName.split(' ')[0] : '';
-                    state.userEmail = user.email;
-                    state.userPhoto = user.photoURL;
-                    state.onboardingComplete = false;
-                    showOnboardingScreen();
-                }
-            }, 500);
-            return;
+        // Se o Firestore estiver com regras restritas, fallback suave usando localStorage
+        const cachedUser = localStorage.getItem('gloomi_user_' + user.uid);
+        if (cachedUser) {
+            loadUserState(JSON.parse(cachedUser));
+            showMainApp();
+            showToast('Bem-vinda de volta! Dados sincronizados localmente ☁️', 'info');
+        } else {
+            tempUserData.name = user.displayName ? user.displayName.split(' ')[0] : '';
+            state.userEmail = user.email;
+            state.userPhoto = user.photoURL;
+            state.onboardingComplete = false;
+            showOnboardingScreen();
         }
-
-        showToast('Erro ao carregar dados da nuvem: ' + (err.message || 'Verifique sua conexão.'), 'warning');
     }
 }
 
@@ -400,8 +471,21 @@ function finishOnboarding(action) {
 
 /* ============ 4. MAIN APP ============ */
 function showMainApp() {
+    hideLoginScreenImmediately();
+    const splash = document.getElementById('splash-screen');
+    if (splash) {
+        splash.style.opacity = '0';
+        splash.style.display = 'none';
+    }
+    const ob = document.getElementById('onboarding-screen');
+    if (ob) {
+        ob.style.opacity = '0';
+        ob.style.display = 'none';
+    }
     const mainApp = document.getElementById('main-app');
-    mainApp.style.display = 'block';
+    if (mainApp) {
+        mainApp.style.display = 'block';
+    }
     updateAllUI();
     applyLumiToAll();
 }
@@ -409,12 +493,22 @@ function showMainApp() {
 function updateAllUI() {
     updateCoinsUI();
     updateUserName(state.userName || 'Você');
+    if (!state.currentRitual) {
+        const hour = new Date().getHours();
+        state.currentRitual = (hour >= 18 || hour < 5) ? 'night' : 'morning';
+    }
+    setRitual(state.currentRitual, false);
     renderRoutine();
     renderProducts();
     renderCalendar();
     updateStreakUI();
     updateXpUI();
     applyLumiToAll();
+
+    // Restaura o humor da pele do dia, se houver
+    if (state.lastSkinMoodDate === getTodayString() && state.todaySkinMood) {
+        selectSkinMood(state.todaySkinMood, false);
+    }
 }
 
 /* ============ 5. NAVEGAÇÃO ============ */
@@ -500,11 +594,47 @@ function updateStreakUI() {
     if (streakEl) streakEl.textContent = state.streak || 1;
 }
 
-/* ============ 7. SISTEMA DE PROGRESSO ============ */
+/* ============ 7. SISTEMA DE PROGRESSO & RITUAIS ============ */
+function setRitual(type, shouldRender = true) {
+    state.currentRitual = type;
+    const morningBtn = document.getElementById('btn-ritual-morning');
+    const nightBtn = document.getElementById('btn-ritual-night');
+    if (morningBtn) morningBtn.classList.toggle('active', type === 'morning');
+    if (nightBtn) nightBtn.classList.toggle('active', type === 'night');
+
+    const titleEl = document.getElementById('routine-dynamic-title');
+    if (titleEl) {
+        titleEl.textContent = type === 'morning' ? 'Ritual da Manhã ☀️' : 'Ritual da Noite 🌙';
+    }
+    const subtitleEl = document.getElementById('routine-dynamic-subtitle');
+    if (subtitleEl) {
+        subtitleEl.textContent = type === 'morning'
+            ? 'Desperte, limpe e proteja sua pele com FPS para o dia todo!'
+            : 'Limpeza profunda, reparação noturna e renovação celular!';
+    }
+    if (shouldRender) renderRoutine();
+}
+
+function getActiveRoutineItems() {
+    return state.products.filter(p => {
+        if (!p.inRoutine) return false;
+        if (!p.period || p.period === 'both') return true;
+        return p.period === state.currentRitual;
+    });
+}
+
+function isProductDone(productId) {
+    const key = (state.currentRitual || 'morning') + '_' + productId;
+    if (state.checkedToday && state.checkedToday.hasOwnProperty(key)) {
+        return !!state.checkedToday[key];
+    }
+    return !!(state.checkedToday && state.checkedToday[productId]);
+}
+
 function updateProgress() {
-    const items = state.products.filter(p => p.inRoutine);
+    const items = getActiveRoutineItems();
     const total = items.length;
-    const done = items.filter(p => state.checkedToday[p.id]).length;
+    const done = items.filter(p => isProductDone(p.id)).length;
 
     document.querySelectorAll('.completed-count').forEach(el => el.textContent = done);
     document.querySelectorAll('.total-count').forEach(el => el.textContent = total);
@@ -515,14 +645,15 @@ function updateProgress() {
     if (bar) bar.style.width = pct + '%';
     if (pctEl) pctEl.textContent = pct + '%';
 
-    // Banner de comemoração quando completa todos os passos
+    // Banner de comemoração quando completa todos os passos do ritual ativo
     const celebBanner = document.getElementById('celebration-banner');
     if (celebBanner) {
         if (total > 0 && done === total) {
             if (!celebBanner.classList.contains('show')) {
                 celebBanner.classList.add('show');
                 triggerConfetti();
-                showToast('✨ Uau, rotina 100% concluída! Pele viçosa e descansada 💖🌸', 'success');
+                const ritualNome = state.currentRitual === 'morning' ? 'da manhã' : 'da noite';
+                showToast(`✨ Uau, ritual ${ritualNome} 100% concluído! Pele radiante e bem cuidada 💖🌸`, 'success');
             }
         } else {
             celebBanner.classList.remove('show');
@@ -549,28 +680,37 @@ function renderRoutine() {
     if (!container) return;
     container.innerHTML = '';
 
-    const routineItems = state.products.filter(p => p.inRoutine);
+    const routineItems = getActiveRoutineItems();
 
     if (routineItems.length === 0) {
+        const ritualLabel = state.currentRitual === 'morning' ? 'da manhã ☀️' : 'da noite 🌙';
         container.innerHTML = `
-            <div style="text-align:center; padding:40px; color:var(--text-muted)">
-                <div style="font-size:3rem;margin-bottom:12px">🌿</div>
-                <p style="font-weight:600">Sua rotina está vazia!</p>
-                <p style="font-size:13px;margin-top:6px">Adicione produtos na aba <strong>Produtos</strong> e marque-os para a rotina.</p>
+            <div style="text-align:center; padding:36px 20px; color:var(--text-muted)">
+                <div style="font-size:2.6rem;margin-bottom:12px">🌿</div>
+                <p style="font-weight:600;font-size:16px;color:var(--text-1)">Seu ritual ${ritualLabel} ainda não tem passos!</p>
+                <p style="font-size:13px;margin-top:6px;max-width:320px;margin-left:auto;margin-right:auto">Adicione produtos na aba <strong>Produtos</strong> ou ative produtos existentes para este momento do dia.</p>
+                <button class="btn-primary" style="margin-top:16px;padding:10px 20px;font-size:13px" onclick="switchTab('products')">
+                    + Escolher Produtos
+                </button>
             </div>`;
         updateProgress();
         return;
     }
 
     routineItems.forEach((product, idx) => {
-        const isDone = !!state.checkedToday[product.id];
+        const isDone = isProductDone(product.id);
         const div = document.createElement('div');
         div.className = `routine-item${isDone ? ' completed' : ''}`;
         div.id = 'ri-' + product.id;
+        const periodBadge = product.period === 'morning' ? '☀️ Manhã' : (product.period === 'night' ? '🌙 Noite' : '☀️🌙 Dia & Noite');
+
         div.innerHTML = `
             <div class="step-number">${idx + 1}</div>
             <div class="routine-item-info">
-                <h4>${escHtml(product.name)}</h4>
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                    <h4>${escHtml(product.name)}</h4>
+                    <span class="product-period-pill">${periodBadge}</span>
+                </div>
                 <p>${escHtml(product.notes || getCategoryLabel(product.category))}</p>
             </div>
             <button class="check-circle${isDone ? ' active' : ''}" onclick="toggleCheck('${product.id}')" title="Marcar como feito">
@@ -583,8 +723,14 @@ function renderRoutine() {
 }
 
 function toggleCheck(productId) {
-    const isDone = !!state.checkedToday[productId];
-    state.checkedToday[productId] = !isDone;
+    const key = (state.currentRitual || 'morning') + '_' + productId;
+    const isDone = isProductDone(productId);
+    state.checkedToday = state.checkedToday || {};
+    state.checkedToday[key] = !isDone;
+    // Se for ritual da manhã, mantém espelhado no ID base para compatibilidade
+    if (state.currentRitual === 'morning') {
+        state.checkedToday[productId] = !isDone;
+    }
 
     const item = document.getElementById('ri-' + productId);
     const btn = item ? item.querySelector('.check-circle') : null;
@@ -594,7 +740,7 @@ function toggleCheck(productId) {
         btn?.classList.add('active');
         addCoins(25, true);
         addXP(30);
-        showToast('Passo concluído! +25 moedas 🌟', 'success');
+        showToast('Passo concluído com carinho! +25 moedas 🌟', 'success');
         checkAchievement('firstStep');
         triggerLumiHappy();
     } else {
@@ -606,6 +752,258 @@ function toggleCheck(productId) {
     saveState();
 }
 
+/* --- CHECK-IN DE HUMOR DA PELE (SKIN MOOD) --- */
+const SKIN_TIPS = {
+    radiant: {
+        title: "Pele Equilibrada & Radiante ✨",
+        text: "Sua pele está em plena harmonia! Mantenha a hidratação balanceada e nunca pule o protetor solar para proteger esse viço natural."
+    },
+    oily: {
+        title: "Pele com Oleosidade ou Brilho 💧",
+        text: "Equilíbrio é tudo: lave com gel suave com ácido salicílico ou zinco e use hidratante de textura leve em gel. Lembre-se: pele oleosa também precisa de água!"
+    },
+    dry: {
+        title: "Pele Ressecada ou Repuxando 🏜️",
+        text: "Dica de ouro: aplique seu hidratante ou ácido hialurônico com a pele levemente úmida após o tônico. À noite, sele tudo com uma camada generosa de ceramidas."
+    },
+    sensitive: {
+        title: "Pele Sensível ou com Vermelhidão 🌸",
+        text: "Hoje é dia de carinho gentil: suspenda esfoliantes ou ácidos fortes. Borrife água termal geladinha e aposte em ativos calmantes como centella asiática, pantenol ou camomila."
+    },
+    acne: {
+        title: "Pele com Acne ou Cravinhos ⚡",
+        text: "Resista à tentação de cutucar ou espremer! Aplique adesivos hidrocoloides para proteger, use ativos calmantes e anti-inflamatórios e mantenha a proteção solar."
+    }
+};
+
+function selectSkinMood(moodId, giveReward = true) {
+    state.todaySkinMood = moodId;
+    state.skinMoodHistory = state.skinMoodHistory || {};
+    const today = getTodayString();
+    const isFirstTimeToday = state.lastSkinMoodDate !== today;
+
+    // Atualiza classes dos botões
+    document.querySelectorAll('.skin-mood-chip').forEach(chip => {
+        chip.classList.toggle('active', chip.dataset.mood === moodId);
+    });
+
+    // Renderiza o card de orientação
+    const adviceEl = document.getElementById('skin-mood-advice');
+    const tip = SKIN_TIPS[moodId];
+    if (adviceEl && tip) {
+        adviceEl.style.display = 'block';
+        adviceEl.innerHTML = `
+            <div class="skin-tip-card">
+                <div class="skin-tip-header">
+                    <span class="editorial-pill"><span class="pill-dot"></span> ORIENTAÇÃO DO DIA</span>
+                    <h4>${tip.title}</h4>
+                </div>
+                <p>${tip.text}</p>
+                <div class="skin-tip-footer">
+                    <span>💡 Orientação personalizada para sua rotina de hoje</span>
+                    ${isFirstTimeToday && giveReward ? '<span class="skin-tip-reward">+10 Moedas & +15 XP!</span>' : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    if (isFirstTimeToday && giveReward) {
+        state.lastSkinMoodDate = today;
+        state.skinMoodHistory[today] = moodId;
+        addCoins(10, true);
+        addXP(15);
+        showToast('Check-in de pele registrado! +10 moedas 🌸', 'success');
+        triggerConfetti();
+    }
+    saveState();
+}
+
+/* --- GUIA VISUAL DE ORDEM DE APLICAÇÃO --- */
+function toggleOrderGuide() {
+    const content = document.getElementById('guide-order-content');
+    const arrow = document.getElementById('guide-arrow');
+    if (!content) return;
+    const isHidden = content.style.display === 'none';
+    content.style.display = isHidden ? 'block' : 'none';
+    if (arrow) {
+        arrow.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+    }
+}
+
+/* --- MINI-SPA FACIAL & TIMER --- */
+let spaTimerState = {
+    totalSeconds: 15 * 60,
+    remainingSeconds: 15 * 60,
+    interval: null,
+    isRunning: false,
+    currentPresetName: 'Máscara Facial 🧖‍♀️'
+};
+
+function openSpaTimerModal() {
+    const modal = document.getElementById('spa-timer-modal');
+    if (modal) {
+        modal.classList.add('active');
+        updateSpaTimerDisplay();
+    }
+}
+
+function closeSpaTimerModal() {
+    const modal = document.getElementById('spa-timer-modal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+function setSpaPreset(minutes, name) {
+    if (spaTimerState.interval) {
+        clearInterval(spaTimerState.interval);
+        spaTimerState.interval = null;
+        spaTimerState.isRunning = false;
+        updateSpaPlayBtn();
+    }
+    spaTimerState.totalSeconds = minutes * 60;
+    spaTimerState.remainingSeconds = minutes * 60;
+    spaTimerState.currentPresetName = name;
+
+    document.querySelectorAll('.spa-preset-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.id === 'spa-preset-' + minutes);
+    });
+
+    const labelEl = document.getElementById('spa-timer-label');
+    if (labelEl) labelEl.textContent = name;
+
+    updateSpaTimerDisplay();
+}
+
+function toggleSpaTimer() {
+    if (spaTimerState.isRunning) {
+        // Pausar
+        clearInterval(spaTimerState.interval);
+        spaTimerState.interval = null;
+        spaTimerState.isRunning = false;
+        updateSpaPlayBtn();
+        showToast('Momento Spa em pausa ⏸️', 'info');
+    } else {
+        // Iniciar
+        if (spaTimerState.remainingSeconds <= 0) {
+            spaTimerState.remainingSeconds = spaTimerState.totalSeconds;
+        }
+        spaTimerState.isRunning = true;
+        updateSpaPlayBtn();
+        showToast('Momento Spa iniciado! Relaxe e respire fundo... 🌸', 'info');
+
+        spaTimerState.interval = setInterval(() => {
+            if (spaTimerState.remainingSeconds > 0) {
+                spaTimerState.remainingSeconds--;
+                updateSpaTimerDisplay();
+                updateBreathingCue();
+            } else {
+                finishSpaSession();
+            }
+        }, 1000);
+    }
+}
+
+function resetSpaTimer() {
+    if (spaTimerState.interval) {
+        clearInterval(spaTimerState.interval);
+        spaTimerState.interval = null;
+    }
+    spaTimerState.isRunning = false;
+    spaTimerState.remainingSeconds = spaTimerState.totalSeconds;
+    updateSpaPlayBtn();
+    updateSpaTimerDisplay();
+    const cue = document.getElementById('spa-breathing-cue');
+    if (cue) cue.textContent = 'Inspire tranquilamente...';
+}
+
+function updateSpaPlayBtn() {
+    const btn = document.getElementById('spa-play-btn');
+    if (!btn) return;
+    if (spaTimerState.isRunning) {
+        btn.innerHTML = '<i class="fa-solid fa-pause"></i> Pausar Momento';
+    } else {
+        btn.innerHTML = '<i class="fa-solid fa-play"></i> Iniciar Momento';
+    }
+}
+
+function updateSpaTimerDisplay() {
+    const mins = Math.floor(spaTimerState.remainingSeconds / 60);
+    const secs = spaTimerState.remainingSeconds % 60;
+    const timeStr = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+    const countdownEl = document.getElementById('spa-timer-countdown');
+    if (countdownEl) countdownEl.textContent = timeStr;
+
+    // Atualiza o progresso visual circular SVG
+    const circle = document.getElementById('spa-timer-circle');
+    if (circle) {
+        const circumference = 2 * Math.PI * 88; // r=88 -> ~552.92
+        circle.style.strokeDasharray = circumference;
+        const progress = (spaTimerState.totalSeconds - spaTimerState.remainingSeconds) / spaTimerState.totalSeconds;
+        circle.style.strokeDashoffset = circumference * (1 - progress);
+    }
+}
+
+function updateBreathingCue() {
+    const cues = [
+        "Inspire devagar pelo nariz...",
+        "Segure o ar suavemente...",
+        "Expire e solte as tensões dos ombros...",
+        "Sinta sua pele absorvendo os nutrientes...",
+        "Relaxe os músculos da face e da testa...",
+        "Você merece esse instante só seu..."
+    ];
+    const index = Math.floor((spaTimerState.totalSeconds - spaTimerState.remainingSeconds) / 6) % cues.length;
+    const cueEl = document.getElementById('spa-breathing-cue');
+    if (cueEl) cueEl.textContent = cues[index];
+}
+
+function playSpaChime() {
+    try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const now = ctx.currentTime;
+
+        // Acorde relaxante harmonioso (Sino de tigela tibetana)
+        const freqs = [523.25, 659.25, 783.99, 1046.50];
+        freqs.forEach((f, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(f, now + i * 0.12);
+
+            gain.gain.setValueAtTime(0.001, now + i * 0.12);
+            gain.gain.exponentialRampToValueAtTime(0.16, now + i * 0.12 + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.12 + 2.8);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now + i * 0.12);
+            osc.stop(now + i * 0.12 + 2.9);
+        });
+    } catch (e) {
+        console.warn('Spa chime:', e);
+    }
+}
+
+function finishSpaSession() {
+    clearInterval(spaTimerState.interval);
+    spaTimerState.interval = null;
+    spaTimerState.isRunning = false;
+    updateSpaPlayBtn();
+
+    playSpaChime();
+    triggerConfetti();
+    addCoins(20, true);
+    addXP(30);
+    showToast(`✨ Momento Spa concluído com sucesso! Sua pele renovada. +20 moedas! 💖`, 'success');
+
+    const cueEl = document.getElementById('spa-breathing-cue');
+    if (cueEl) cueEl.textContent = '✨ Sessão finalizada com sucesso! Parabéns!';
+}
+
 /* ============ 9. PRODUTOS ============ */
 function renderProducts() {
     const grid = document.getElementById('products-grid');
@@ -615,16 +1013,20 @@ function renderProducts() {
     state.products.forEach(p => {
         const card = document.createElement('div');
         card.className = 'product-card animate-fade-in';
+        const periodText = p.period === 'morning' ? '☀️ Manhã' : (p.period === 'night' ? '🌙 Noite' : '☀️🌙 Dia & Noite');
         card.innerHTML = `
-            <span class="product-tag ${getTagClass(p.category)}">${getCategoryLabel(p.category)}</span>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                <span class="product-tag ${getTagClass(p.category)}">${getCategoryLabel(p.category)}</span>
+                <span class="product-period-pill">${periodText}</span>
+            </div>
             <h3>${escHtml(p.name)}</h3>
             ${p.brand ? `<span class="brand">🏷 ${escHtml(p.brand)}</span>` : ''}
             <p>${escHtml(p.notes || 'Produto adicionado à sua coleção.')}</p>
             <div class="product-card-actions">
-                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text-muted);flex:1">
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text-2);flex:1">
                     <input type="checkbox" onchange="toggleProductRoutine('${p.id}', this.checked)" 
                            ${p.inRoutine ? 'checked' : ''}
-                           style="accent-color:var(--jungle-green);width:16px;height:16px">
+                           style="accent-color:var(--brand-coral);width:16px;height:16px">
                     Na rotina
                 </label>
                 <button class="product-delete-btn" onclick="deleteProduct('${p.id}')" title="Remover produto">
@@ -641,7 +1043,7 @@ function renderProducts() {
     addCard.innerHTML = `
         <div class="add-icon"><i class="fa-solid fa-plus"></i></div>
         <p>Adicionar Produto</p>
-        <span style="font-size:12px;color:var(--text-muted)">Clique para cadastrar</span>`;
+        <span style="font-size:12px;color:var(--text-3)">Clique para cadastrar</span>`;
     grid.appendChild(addCard);
 }
 
@@ -649,7 +1051,11 @@ function toggleProductRoutine(productId, isIn) {
     const product = state.products.find(p => p.id === productId);
     if (product) {
         product.inRoutine = isIn;
-        if (!isIn) delete state.checkedToday[productId];
+        if (!isIn) {
+            delete state.checkedToday[productId];
+            delete state.checkedToday['morning_' + productId];
+            delete state.checkedToday['night_' + productId];
+        }
         renderRoutine();
         saveState();
     }
@@ -658,10 +1064,12 @@ function toggleProductRoutine(productId, isIn) {
 function deleteProduct(productId) {
     state.products = state.products.filter(p => p.id !== productId);
     delete state.checkedToday[productId];
+    delete state.checkedToday['morning_' + productId];
+    delete state.checkedToday['night_' + productId];
     renderProducts();
     renderRoutine();
     saveState();
-    showToast('Produto removido.', 'info');
+    showToast('Produto removido da coleção.', 'info');
 }
 
 /* --- Modal de Adicionar Produto --- */
@@ -673,6 +1081,9 @@ function openAddProductModal() {
     document.getElementById('new-prod-notes').value = '';
     document.querySelectorAll('.category-chip').forEach(c => c.classList.remove('selected'));
     document.querySelector('.category-chip[data-cat="limpeza"]')?.classList.add('selected');
+
+    document.querySelectorAll('.period-chip').forEach(c => c.classList.remove('selected'));
+    document.querySelector('.period-chip[data-period="both"]')?.classList.add('selected');
     openModal(modal);
 }
 
@@ -681,16 +1092,23 @@ function selectCategory(cat, el) {
     el.classList.add('selected');
 }
 
+function selectPeriod(period, el) {
+    document.querySelectorAll('.period-chip').forEach(c => c.classList.remove('selected'));
+    if (el) el.classList.add('selected');
+}
+
 function saveNewProduct() {
     const name = document.getElementById('new-prod-name').value.trim();
     const brand = document.getElementById('new-prod-brand').value.trim();
     const notes = document.getElementById('new-prod-notes').value.trim();
     const catEl = document.querySelector('.category-chip.selected');
     const cat = catEl ? catEl.dataset.cat : 'limpeza';
+    const periodEl = document.querySelector('.period-chip.selected');
+    const period = periodEl ? periodEl.dataset.period : 'both';
 
     if (!name) { showToast('Dê um nome ao produto!', 'warning'); return; }
 
-    const newProduct = { id: genId(), name, brand, category: cat, notes, inRoutine: true };
+    const newProduct = { id: genId(), name, brand, category: cat, notes, period, inRoutine: true };
     state.products.push(newProduct);
 
     closeModal(document.getElementById('add-product-modal'));
@@ -1078,17 +1496,15 @@ function logout() {
     }
     firebaseUser = null;
     currentUser = null;
+    localStorage.removeItem('gloomi_logged_in');
+    localStorage.removeItem('gloomi_last_uid');
 
     showToast('Você saiu da conta. Até logo! ✦', 'info');
 
     const mainApp = document.getElementById('main-app');
     if (mainApp) mainApp.style.display = 'none';
 
-    const loginScreen = document.getElementById('login-screen');
-    if (loginScreen) {
-        loginScreen.style.display = 'flex';
-        setTimeout(() => { loginScreen.style.opacity = '1'; }, 30);
-    }
+    showLoginScreen();
 }
 
 function updateUserNameFromInput(val) {
