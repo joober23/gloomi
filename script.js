@@ -216,7 +216,31 @@ async function loadFromFirestoreOrInit(user) {
         }, 500);
 
     } catch (err) {
-        console.error('[Gloomi Firebase] Erro ao carregar dados do usuário:', err);
+        console.warn('[Gloomi Firebase] Aviso ao carregar dados do usuário no Firestore:', err);
+
+        // Se o Firestore estiver com regras fechadas (permission-denied), não bloqueia a entrada da usuária!
+        if (err.code === 'permission-denied' || (err.message && err.message.toLowerCase().includes('permission'))) {
+            showToast('⚠️ O login com Google funcionou! Para salvar na nuvem, lembre-se de liberar as Regras no Console do Firebase.', 'warning');
+
+            if (loginScreen) loginScreen.style.opacity = '0';
+            setTimeout(() => {
+                if (loginScreen) loginScreen.style.display = 'none';
+
+                const cachedUser = localStorage.getItem('gloomi_user_' + user.uid);
+                if (cachedUser) {
+                    loadUserState(JSON.parse(cachedUser));
+                    showMainApp();
+                } else {
+                    tempUserData.name = user.displayName ? user.displayName.split(' ')[0] : '';
+                    state.userEmail = user.email;
+                    state.userPhoto = user.photoURL;
+                    state.onboardingComplete = false;
+                    showOnboardingScreen();
+                }
+            }, 500);
+            return;
+        }
+
         showToast('Erro ao carregar dados da nuvem: ' + (err.message || 'Verifique sua conexão.'), 'warning');
     }
 }
